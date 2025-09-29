@@ -3,2287 +3,2202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beemote - Rede Social Descentralizada</title>
-    <meta name="description" content="Rede social descentralizada com foco em privacidade e conexões genuínas">
+    <title>BunnyChat - Mensagens e Chamadas Fofinhas</title>
+    
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Short+Stack&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gun/lib/radix.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gun/lib/radisk.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gun/lib/store.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gun/lib/rindexed.js"></script>
+    
     <style>
         :root {
-            --primary: #6C63FF;
-            --primary-dark: #564fcc;
-            --primary-light: #e9e8ff;
-            --secondary: #f8f9fa;
-            --dark: #343a40;
-            --light: #ffffff;
-            --gray: #6c757d;
-            --gray-light: #e9ecef;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #17a2b8;
-            --border-radius: 12px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: all 0.3s ease;
+            --primary: #FF9BB3;
+            --secondary: #FFD1DC;
+            --dark: #5A2A3E;
+            --light: #FFF2F5;
+            --success: #4CAF50;
+            --error: #F44336;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 15px;
         }
-
+        
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Comic Neue', 'Short Stack', cursive, sans-serif;
         }
-
+        
         body {
-            background-color: #f5f7f9;
-            color: #333;
-            padding-top: 70px;
-            padding-bottom: 70px;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
             min-height: 100vh;
         }
-
-        /* Header Styles */
+        
         header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--light);
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
             box-shadow: var(--shadow);
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            height: 70px;
         }
-
-        .logo {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
         }
-
-        .logo i {
-            font-size: 1.5rem;
-        }
-
-        #auth-status {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        #user-alias {
-            font-weight: 600;
-            color: var(--dark);
-            max-width: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* Navigation */
-        nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--light);
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            z-index: 1000;
-            height: 70px;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--gray);
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: var(--transition);
-            padding: 8px 12px;
-            border-radius: var(--border-radius);
-        }
-
-        .nav-item i {
-            font-size: 1.3rem;
-            margin-bottom: 4px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background-color: var(--primary-light);
-        }
-
-        .nav-item:hover {
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        /* Main Content */
-        main {
-            padding: 20px;
+        
+        .container {
             max-width: 800px;
             margin: 0 auto;
-        }
-
-        /* Card Styles */
-        .card {
-            background-color: var(--light);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
             padding: 20px;
-            margin-bottom: 20px;
-            transition: var(--transition);
-            border: 1px solid var(--gray-light);
         }
-
-        .card:hover {
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-        }
-
-        /* Post Styles */
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .post-author-info {
-            display: flex;
-            align-items: center;
-            flex: 1;
-        }
-
-        .avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            font-weight: bold;
-            background-size: cover;
-            background-position: center;
-            flex-shrink: 0;
-            font-size: 1.2rem;
-            position: relative;
-        }
-
-        .online-indicator {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 12px;
-            height: 12px;
-            background-color: var(--success);
-            border: 2px solid white;
-            border-radius: 50%;
-        }
-
-        .post-author {
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-
-        .post-time, .post-countdown {
-            font-size: 0.8rem;
-            color: var(--gray);
-        }
-
-        .post-content {
-            margin-bottom: 15px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            line-height: 1.5;
-            font-size: 1.05rem;
-        }
-
-        .post-actions {
-            display: flex;
-            border-top: 1px solid var(--gray-light);
-            padding-top: 15px;
-            margin-top: 10px;
-        }
-
-        .post-action {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
-            color: var(--gray);
-            cursor: pointer;
-            transition: var(--transition);
-            padding: 6px 10px;
-            border-radius: var(--border-radius);
-        }
-
-        .post-action:hover {
-            background-color: var(--gray-light);
-            color: var(--dark);
-        }
-
-        .post-action.liked {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .post-action i {
-            margin-right: 6px;
-            font-size: 1.1rem;
-        }
-
-        /* Comments */
-        .comments-section {
-            margin-top: 15px;
-            border-top: 1px solid var(--gray-light);
-            padding-top: 15px;
+        
+        .screen {
             display: none;
+            animation: fadeIn 0.5s ease;
         }
-
-        .comment-form {
-            display: flex;
-            margin-top: 15px;
-            gap: 10px;
-        }
-
-        .comment {
-            font-size: 0.95rem;
-            margin-bottom: 12px;
-            background-color: var(--gray-light);
-            padding: 12px;
-            border-radius: var(--border-radius);
-            position: relative;
-        }
-
-        .comment-author {
-            font-weight: 600;
-            margin-bottom: 5px;
+        
+        .screen.active {
             display: block;
         }
-
-        /* Buttons */
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            background-color: var(--gray);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.85rem;
-        }
-
-        .btn-success {
-            background-color: var(--success);
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-        }
-
-        .btn-warning {
-            background-color: var(--warning);
-            color: var(--dark);
-        }
-
-        /* Forms */
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        /* Utility Classes */
-        .hidden {
-            display: none !important;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: var(--gray);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--gray-light);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-content {
-            background-color: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 90%;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--gray-light);
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--gray);
-            transition: var(--transition);
-        }
-
-        .close-btn:hover {
-            color: var(--danger);
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            border-radius: var(--border-radius);
-            color: white;
-            z-index: 3000;
-            opacity: 0;
-            transition: opacity 0.5s, top 0.5s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: var(--shadow);
-        }
-
-        .notification.show {
-            opacity: 1;
-            top: 90px;
-        }
-
-        .notification.success {
-            background-color: var(--success);
-        }
-
-        .notification.error {
-            background-color: var(--danger);
-        }
-
-        .notification.warning {
-            background-color: var(--warning);
-            color: var(--dark);
-        }
-
-        /* Profile Styles */
-        .profile-header {
-            text-align: center;
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            cursor: pointer;
-            position: relative;
-            border: 3px solid var(--primary-light);
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: white;
-            background-color: var(--primary);
-        }
-
-        .profile-avatar-edit {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            box-shadow: var(--shadow);
-        }
-
-        .profile-name {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .profile-bio {
-            color: var(--gray);
-            margin: 15px 0;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .profile-stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 25px 0;
-            padding: 15px 0;
-            border-top: 1px solid var(--gray-light);
-            border-bottom: 1px solid var(--gray-light);
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 0 15px;
-        }
-
-        .stat-number {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--gray);
-            margin-top: 5px;
-        }
-
-        /* Tabs */
-        .tab-container {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .tab-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab {
-            padding: 12px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .tab.active {
-            border-bottom-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .tab:hover {
-            background-color: var(--primary-light);
-            color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
+        
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
-        /* Cards for users and communities */
-        .item-card, .user-card, .community-card {
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:hover {
+            background-color: #ff85a2;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn.btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+        
+        .feedback-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+        
+        .feedback-success {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .feedback-error {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid var(--primary);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background-color: white;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--dark);
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        
+        .contact-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .delete-contact-btn, .call-contact-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px;
+            margin-left: 10px;
+        }
+        
+        .delete-contact-btn { color: var(--error); }
+        .call-contact-btn { color: var(--success); }
+        
+        .user-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .user-info-item {
+            margin-bottom: 10px;
+        }
+        
+        .user-info-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .qr-code-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .qr-code {
+            border: 10px solid white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .user-id-container {
+            display: flex;
+            margin: 20px 0;
+        }
+        
+        .user-id-container input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .user-id-container button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-top-right-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            padding: 0 15px;
+            cursor: pointer;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .share-btn {
+            flex: 1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .qr-scanner {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .qr-scanner video {
+            width: 100%;
+            display: block;
+        }
+        
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+        
+        .scan-frame {
+            width: 70%;
+            height: 70%;
+            border: 4px solid var(--primary);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .scan-frame::before, .scan-frame::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 4px solid transparent;
+        }
+        
+        .scan-frame::before {
+            top: -4px;
+            left: -4px;
+            border-top-color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        
+        .scan-frame::after {
+            bottom: -4px;
+            right: -4px;
+            border-bottom-color: var(--primary);
+            border-right-color: var(--primary);
+        }
+        
+        #chatScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--light);
+            z-index: 1000;
+            padding: 0;
+            margin: 0;
+            display: none;
+            flex-direction: column;
+        }
+        
+        #chatScreen.active {
+            display: flex;
+        }
+        
+        .chat-header {
             display: flex;
             align-items: center;
             padding: 15px;
-            margin-bottom: 15px;
-            border-radius: var(--border-radius);
-            background-color: white;
+            background-color: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
             box-shadow: var(--shadow);
-            transition: var(--transition);
         }
-
-        .item-card:hover, .user-card:hover, .community-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            margin-right: 10px;
+            cursor: pointer;
         }
-
-        .user-card {
-            justify-content: space-between;
-        }
-
-        .user-card-info, .community-info {
+        
+        .chat-messages {
+            padding: 15px;
+            background-color: white;
             flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #888;
+            height: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
         }
-
-        .user-card-alias, .community-name {
-            font-weight: 600;
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
         }
-
-        .user-card-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        /* Feed Header */
-        .feed-header {
-            background: linear-gradient(135deg, var(--primary-light) 0%, #e9e8ff 100%);
-            padding: 15px 20px;
+        
+        .message-item {
+            margin-bottom: 15px;
+            max-width: 80%;
+            padding: 10px 15px;
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
+        }
+        
+        .message-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            border-left: 4px solid var(--primary);
+            margin-bottom: 5px;
         }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            main {
-                padding: 15px;
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            .profile-stats {
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-            
-            .stat-item {
-                flex: 1;
-                min-width: 80px;
-            }
-            
-            .post-actions {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .post-action {
-                margin-right: 10px;
-            }
-            
-            .modal-content {
-                padding: 20px 15px;
-            }
-            
-            .tab {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-            }
+        
+        .message-avatar {
+            width: 30px;
+            height: 30px;
+            font-size: 0.8rem;
+            margin-right: 8px;
         }
-
-        @media (max-width: 480px) {
-            header {
-                padding: 10px 15px;
+        
+        .message-sender {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .message-content {
+            word-wrap: break-word;
+        }
+        
+        .message-expiry {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .call-button-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .call-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 15px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .message-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1010;
+        }
+        
+        .message-input-container input[type="text"] {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .send-btn, .call-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .floating-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .floating-buttons.visible {
+            display: flex;
+        }
+        
+        .floating-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .call-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .call-container.active {
+            display: flex;
+        }
+        
+        .call-video-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+        
+        .call-video {
+            background-color: black;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            width: 100%;
+            max-width: 100%;
+            height: calc(100vh - 200px);
+        }
+        
+        .call-video.small {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            width: 120px;
+            height: 90px;
+            z-index: 10;
+        }
+        
+        .call-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .call-status {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .call-buttons {
+            display: flex;
+            gap: 20px;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            justify-content: center;
+            z-index: 20;
+        }
+        
+        .call-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--shadow);
+        }
+        
+        .call-accept { background-color: var(--success); color: white; }
+        .call-reject, .call-end { background-color: var(--error); color: white; }
+        .call-mute { background-color: var(--dark); color: white; }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
             }
             
-            .logo {
-                font-size: 1.5rem;
+            .floating-buttons {
+                bottom: 10px;
+                right: 10px;
             }
             
-            #user-alias {
-                max-width: 80px;
+            .floating-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
             }
             
-            .btn {
-                padding: 8px 12px;
-                font-size: 0.9rem;
+            .chat-messages {
+                padding-bottom: 70px;
             }
             
-            .profile-avatar {
+            .message-input-container {
+                padding: 10px;
+            }
+            
+            .call-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .call-video {
+                max-width: 100%;
+                height: 200px;
+            }
+            
+            .call-video.small {
                 width: 80px;
-                height: 80px;
-                font-size: 2rem;
-            }
-            
-            .profile-name {
-                font-size: 1.5rem;
-            }
-            
-            .feed-header {
-                flex-direction: column;
-                gap: 10px;
-                align-items: flex-start;
+                height: 60px;
+                bottom: 80px;
             }
         }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --light: #2a2a3a;
-                --dark: #f8f9fa;
-                --gray: #adb5bd;
-                --gray-light: #3a3a4a;
-            }
-            
-            body {
-                background-color: #1a1a2a;
-                color: #e9ecef;
-            }
-            
-            .card {
-                background-color: var(--light);
-                border-color: #3a3a4a;
-            }
-            
-            .comment {
-                background-color: #3a3a4a;
-            }
+        
+        .hidden {
+            display: none !important;
         }
-
-        /* Animation for new content */
-        .fade-in {
-            animation: fadeIn 0.5s ease;
+        
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
         }
-
-        /* Pulse animation for notifications */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
         }
-
-        .pulse {
-            animation: pulse 0.5s ease;
+        
+        .search-container input {
+            padding-left: 40px !important;
         }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
+        
+        .no-contacts {
+            text-align: center;
+            padding: 20px;
+            color: #888;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo"><i class="fas fa-bee"></i> Beemote</div>
-        <div id="auth-status">
-            <span id="user-alias"></span>
-            <button id="logout-btn" class="btn btn-outline btn-sm hidden"><i class="fas fa-sign-out-alt"></i> Sair</button>
-            <button id="login-btn" class="btn btn-sm"><i class="fas fa-sign-in-alt"></i> Entrar</button>
-        </div>
+        <h1>BunnyChat</h1>
     </header>
     
-    <main>
-        <div id="notification-bar" class="notification"></div>
-        
-        <div id="feed-page" class="page">
-            <div id="feed-header-container" class="hidden"></div>
-            <div class="card">
-                <textarea id="post-content" class="form-control" placeholder="O que você está pensando? (Posts duram 24h)" rows="3"></textarea>
-                <button id="create-post-btn" class="btn" style="margin-top: 15px;">
-                    <i class="fas fa-paper-plane"></i> Publicar
-                </button>
-            </div>
-            <div id="posts-container">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Carregando posts...</div>
-                </div>
+    <div class="container">
+        <div id="userSelectScreen" class="screen active">
+            <div class="btn-group">
+                <button id="newUserBtn" class="btn"><span class="btn-text">Novo Usuário</span></button>
+                <button id="existingUserBtn" class="btn"><span class="btn-text">Usuário Existente</span></button>
             </div>
         </div>
         
-        <div id="communities-page" class="page hidden">
-            <div class="card">
-                <h2><i class="fas fa-users"></i> Comunidades</h2>
-                <p style="margin: 10px 0; color: var(--gray);">Participe de comunidades com interesses em comum</p>
-                <button id="show-community-modal-btn" class="btn">
-                    <i class="fas fa-plus"></i> Criar Comunidade
-                </button>
+        <div id="newUserScreen" class="screen">
+            <div style="text-align: center; margin: 20px 0;"><h2>Criar Novo Usuário</h2></div>
+            <div style="margin-bottom: 20px;">
+                <label for="newUserName">Seu Nome:</label>
+                <input type="text" id="newUserName" placeholder="Digite seu nome">
             </div>
-            <div id="communities-container">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Carregando comunidades...</div>
-                </div>
-            </div>
+            <button id="createUserBtn" class="btn" style="width: 100%;"><span class="btn-text">Criar Usuário</span></button>
+            <div id="createUserFeedback" class="feedback-message hidden"></div>
+            <button id="backToSelectFromNew" class="btn" style="margin-top: 10px; width: 100%;"><span class="btn-text">Voltar</span></button>
         </div>
         
-        <div id="connections-page" class="page hidden">
-            <div class="card">
-                <h3><i class="fas fa-user-clock"></i> Solicitações Pendentes</h3>
-                <div id="pending-requests-container">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <div>Carregando solicitações...</div>
+        <div id="existingUserScreen" class="screen">
+            <div style="text-align: center; margin: 20px 0;"><h2>Usar Usuário Existente</h2></div>
+            <div style="margin-bottom: 20px;">
+                <label for="existingUserId">ID do Usuário:</label>
+                <input type="text" id="existingUserId" placeholder="Digite seu ID de usuário">
+            </div>
+            <button id="loadUserBtn" class="btn" style="width: 100%;"><span class="btn-text">Carregar Usuário</span></button>
+            <div id="loadUserFeedback" class="feedback-message hidden"></div>
+            <button id="backToSelectFromExisting" class="btn" style="margin-top: 10px; width: 100%;"><span class="btn-text">Voltar</span></button>
+        </div>
+        
+        <div id="mainScreen" class="screen">
+            <div id="contactsSection" style="margin-top: 20px; display: block;">
+                <h3>Seus Contatos</h3>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchContactsInput" placeholder="Buscar contatos...">
+                </div>
+                <div id="contactsList" style="margin-top: 10px;"></div>
+            </div>
+            
+            <div id="qrSection" class="hidden" style="margin-top: 20px;">
+                <div class="user-info">
+                    <div class="user-info-item">
+                        <span class="user-info-label">Seu Nome:</span>
+                        <span id="userNameDisplay"></span>
+                    </div>
+                    <div class="user-info-item">
+                        <span class="user-info-label">Seu ID:</span>
+                        <span id="userIdDisplayText"></span>
+                    </div>
+                </div>
+                <h3 style="text-align: center;">Meu QR Code</h3>
+                <div class="qr-code-container">
+                    <canvas id="qrCodeCanvas" class="qr-code"></canvas>
+                </div>
+                <div class="user-id-container">
+                    <input type="text" id="userIdInput" readonly>
+                    <button id="copyUserIdBtn" title="Copiar ID"><i class="fas fa-copy"></i></button>
+                </div>
+                <div class="share-buttons">
+                    <button id="shareQRBtn" class="share-btn"><i class="fas fa-share-alt"></i> Compartilhar</button>
+                    <button id="downloadQRBtn" class="share-btn"><i class="fas fa-download"></i> Baixar QR</button>
+                </div>
+            </div>
+            
+            <div id="scanSection" class="hidden" style="margin-top: 20px;">
+                <div class="qr-scanner">
+                    <video id="qrVideo" playsinline></video>
+                    <div class="scan-overlay">
+                        <div class="scan-frame"></div>
+                        <i class="fas fa-qrcode" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>Posicione o QR Code na área de leitura</p>
                     </div>
                 </div>
             </div>
-            <div class="card">
-                <h3><i class="fas fa-search"></i> Buscar Usuários</h3>
-                <input type="text" id="user-search-input" class="form-control" placeholder="Digite o nome de um usuário...">
-                <div id="all-users-container" style="margin-top: 15px;">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <div>Carregando usuários...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="profile-page" class="page hidden">
-            <div id="profile-container">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Carregando perfil...</div>
-                </div>
-            </div>
-        </div>
-    </main>
-    
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Entrar / Cadastrar</h2>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="form-group">
-                <label for="auth-alias">Nome de usuário</label>
-                <input type="text" id="auth-alias" class="form-control" placeholder="Seu nome na plataforma">
-            </div>
-            <div class="form-group">
-                <label for="auth-pass">Senha</label>
-                <input type="password" id="auth-pass" class="form-control" placeholder="Sua senha">
-            </div>
-            <button id="auth-submit-btn" class="btn" style="width: 100%;">
-                <i class="fas fa-check"></i> Continuar
-            </button>
-            <p style="margin-top: 20px; text-align: center; color: var(--gray); font-size: 0.9rem;">
-                Sua privacidade é importante. Todos os dados são criptografados.
-            </p>
         </div>
     </div>
-    
-    <!-- Avatar Modal -->
-    <div id="avatar-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Alterar Foto de Perfil</h2>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="avatar-upload" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;">
-                <div id="avatar-preview" class="avatar-preview"></div>
-                <input type="file" id="avatar-input" class="file-input" accept="image/*">
-                <label for="avatar-input" class="file-label" style="margin-top: 15px;">
-                    <i class="fas fa-image"></i> Escolher Imagem
-                </label>
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-outline close-modal-btn">Cancelar</button>
-                <button id="save-avatar-btn" class="btn">Salvar</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Community Modal -->
-    <div id="community-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Criar Nova Comunidade</h2>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="form-group">
-                <label for="community-name">Nome da Comunidade</label>
-                <input type="text" id="community-name" class="form-control" placeholder="Ex: Tecnologia, Arte, Música...">
-            </div>
-            <div class="form-group">
-                <label for="community-desc">Descrição</label>
-                <textarea id="community-desc" class="form-control" rows="3" placeholder="Descreva o propósito desta comunidade..."></textarea>
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-outline close-modal-btn">Cancelar</button>
-                <button id="create-community-submit-btn" class="btn">Criar Comunidade</button>
-            </div>
-        </div>
-    </div>
-    
-    <nav>
-        <a href="#" class="nav-item active" data-page="feed">
-            <i class="fas fa-home"></i>
-            <span>Feed</span>
-        </a>
-        <a href="#" class="nav-item" data-page="communities">
-            <i class="fas fa-users"></i>
-            <span>Comunidades</span>
-        </a>
-        <a href="#" class="nav-item" data-page="connections">
-            <i class="fas fa-link"></i>
-            <span>Conexões</span>
-        </a>
-        <a href="#" class="nav-item" data-page="profile">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
-        </a>
-    </nav>
 
+    <div id="chatScreen" class="screen">
+        <div class="chat-header">
+            <button id="backToMainBtn" class="back-button"><i class="fas fa-arrow-left"></i></button>
+            <div class="avatar" id="chatAvatar"></div>
+            <div id="chatContactName"></div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="empty-state">
+                <i class="fas fa-comment-dots"></i>
+                <p>Nenhuma mensagem ainda</p>
+                <p>Envie uma mensagem para começar a conversa!</p>
+            </div>
+        </div>
+        <div class="message-input-container">
+            <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+            <button id="callButton" class="call-btn" title="Chamada de vídeo"><i class="fas fa-video"></i></button>
+            <button id="sendMessageBtn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="callScreen" class="call-container">
+        <div class="call-video-container">
+            <video id="remoteVideo" class="call-video" autoplay playsinline></video>
+            <video id="localVideo" class="call-video small" autoplay muted playsinline></video>
+        </div>
+        <div class="call-info">
+            <h2 id="callContactName">Chamando...</h2>
+            <div id="callStatus" class="call-status">Conectando...</div>
+        </div>
+        <div class="call-buttons">
+            <button id="acceptCallBtn" class="call-button call-accept hidden" title="Atender"><i class="fas fa-phone"></i></button>
+            <button id="rejectCallBtn" class="call-button call-reject hidden" title="Recusar"><i class="fas fa-phone-slash"></i></button>
+            <button id="endCallBtn" class="call-button call-end hidden" title="Encerrar"><i class="fas fa-phone-slash"></i></button>
+            <button id="muteCallBtn" class="call-button call-mute hidden" title="Mutar"><i class="fas fa-microphone"></i></button>
+        </div>
+    </div>
+
+    <div class="floating-buttons">
+        <button id="showContactsBtn" class="floating-btn" title="Contatos"><i class="fas fa-address-book"></i></button>
+        <button id="showQRBtn" class="floating-btn" title="Meu QR Code"><i class="fas fa-qrcode"></i></button>
+        <button id="scanQRBtn" class="floating-btn" title="Escanear QR"><i class="fas fa-camera"></i></button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
     <script>
-    (function() {
-        'use strict';
-        
-        // Configuration
-        const CONFIG = {
-            GUN_PEERS: ['https://gun-manhattan.herokuapp.com/gun'],
-            POST_EXPIRATION_MS: 24 * 60 * 60 * 1000, // 24 hours
-            MAX_POST_LENGTH: 500,
-            MAX_BIO_LENGTH: 200,
-            AVATAR_MAX_SIZE: 2 * 1024 * 1024 // 2MB
-        };
-        
-        // State management
+        // Configuração do Gun.js
+        const gun = Gun({
+            peers: [
+                'https://gun-manhattan.herokuapp.com/gun',
+                'https://gun-us.herokuapp.com/gun',
+                'https://gun-eu.herokuapp.com/gun'
+            ],
+            localStorage: false,
+            radisk: false,
+            retry: 3
+        });
+
+        // Estado da aplicação
         const state = {
-            gun: Gun({ peers: CONFIG.GUN_PEERS, localStorage: false, radisk: true }),
-            user: null,
-            currentPage: 'feed',
-            activeSubscriptions: new Map(),
-            tempAvatarFile: null,
-            currentCommunity: { id: null, name: null },
-            postsData: new Map(),
-            countdownInterval: null,
-            usersCache: new Map(),
-            currentUserProfile: null
-        };
-        
-        // UI elements
-        const ui = {
-            pages: document.querySelectorAll('.page'),
-            navItems: document.querySelectorAll('.nav-item'),
-            loginBtn: document.getElementById('login-btn'),
-            logoutBtn: document.getElementById('logout-btn'),
-            userAlias: document.getElementById('user-alias'),
-            authModal: document.getElementById('auth-modal'),
-            authAlias: document.getElementById('auth-alias'),
-            authPass: document.getElementById('auth-pass'),
-            authSubmitBtn: document.getElementById('auth-submit-btn'),
-            postContent: document.getElementById('post-content'),
-            createPostBtn: document.getElementById('create-post-btn'),
-            postsContainer: document.getElementById('posts-container'),
-            profileContainer: document.getElementById('profile-container'),
-            notificationBar: document.getElementById('notification-bar'),
-            closeModalBtns: document.querySelectorAll('.close-modal-btn, .close-btn'),
-            avatarModal: document.getElementById('avatar-modal'),
-            avatarPreview: document.getElementById('avatar-preview'),
-            avatarInput: document.getElementById('avatar-input'),
-            saveAvatarBtn: document.getElementById('save-avatar-btn'),
-            communitiesContainer: document.getElementById('communities-container'),
-            communityModal: document.getElementById('community-modal'),
-            showCommunityModalBtn: document.getElementById('show-community-modal-btn'),
-            createCommunitySubmitBtn: document.getElementById('create-community-submit-btn'),
-            feedHeaderContainer: document.getElementById('feed-header-container'),
-            pendingRequestsContainer: document.getElementById('pending-requests-container'),
-            allUsersContainer: document.getElementById('all-users-container'),
-            userSearchInput: document.getElementById('user-search-input'),
-        };
-        
-        // Utility functions
-        const sanitizeHTML = (str) => {
-            if (!str) return '';
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
-        };
-        
-        const showNotification = (message, type = 'success') => {
-            ui.notificationBar.textContent = message;
-            ui.notificationBar.className = `notification ${type} show`;
-            setTimeout(() => ui.notificationBar.classList.remove('show'), 3000);
-        };
-        
-        const renderAvatar = (profile, customClass = 'avatar', size = '') => {
-            const style = profile?.avatar ? `background-image: url('${profile.avatar}')` : '';
-            const letter = !profile?.avatar ? (profile?.alias ? profile.alias.charAt(0).toUpperCase() : '?') : '';
-            return `<div class="${customClass}" style="${style}; ${size}">${letter}</div>`;
-        };
-        
-        const formatTime = (timestamp) => {
-            const now = Date.now();
-            const diff = now - timestamp;
-            
-            if (diff < 60000) return 'Agora mesmo';
-            if (diff < 3600000) return `${Math.floor(diff / 60000)} min atrás`;
-            if (diff < 86400000) return `${Math.floor(diff / 3600000)} h atrás`;
-            
-            return new Date(timestamp).toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        };
-        
-        const formatCountdown = (timestamp) => {
-            const msLeft = (timestamp + CONFIG.POST_EXPIRATION_MS) - Date.now();
-            if (msLeft <= 0) return "Expirado";
-            const hours = Math.floor(msLeft / 3600000);
-            const minutes = Math.floor((msLeft % 3600000) / 60000);
-            return `Expira em ${hours}h ${minutes}m`;
-        };
-        
-        const debounce = (func, wait) => {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        };
-        
-        // Clear all active subscriptions
-        const clearSubscriptions = () => {
-            state.activeSubscriptions.forEach(sub => sub.off());
-            state.activeSubscriptions.clear();
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-                state.countdownInterval = null;
-            }
-        };
-        
-        // Navigation
-        const navigateTo = (page) => {
-            clearSubscriptions();
-            state.currentPage = page;
-            state.postsData.clear();
-            
-            ui.pages.forEach(p => p.classList.add('hidden'));
-            document.getElementById(`${page}-page`).classList.remove('hidden');
-            
-            ui.navItems.forEach(item => {
-                item.classList.toggle('active', item.dataset.page === page);
-            });
-            
-            loadPageContent(page);
-        };
-        
-        const loadPageContent = (page) => {
-            switch (page) {
-                case 'feed': loadFeed(); break;
-                case 'profile': loadProfile(); break;
-                case 'connections': loadConnectionsPage(); break;
-                case 'communities': loadCommunities(); break;
-            }
-        };
-        
-        // Authentication
-        const checkUserSession = () => {
-            state.gun.user().recall({ sessionStorage: true }, ack => {
-                if (ack && ack.pub) {
-                    state.user = state.gun.user();
-                    updateUIForUser();
-                    // Load user profile
-                    state.gun.get(`~${ack.pub}`).once(profile => {
-                        state.currentUserProfile = profile;
-                    });
+            currentUser: null,
+            currentContact: null,
+            contactsCache: {},
+            messagesCache: {},
+            processedMessageIds: new Set(), // Novo: IDs de mensagens já processadas
+            qrScannerActive: false,
+            db: null,
+            gunListeners: [],
+            peerConnection: null,
+            localStream: null,
+            remoteStream: null,
+            callDataChannel: null,
+            isCaller: false,
+            isInCall: false,
+            isMuted: false,
+            callId: null,
+            callListener: null,
+            lastMessageSent: null, // Novo: controle da última mensagem enviada
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                {
+                    urls: 'turn:numb.viagenie.ca',
+                    credential: 'muazkh',
+                    username: 'webrtc@live.com'
                 }
-            });
+            ]
         };
-        
-        const handleAuth = () => {
-            const alias = ui.authAlias.value.trim();
-            const pass = ui.authPass.value.trim();
-            
-            if (!alias || !pass) {
-                return showNotification('Preencha todos os campos.', 'error');
+
+        // Elementos DOM
+        const elements = {
+            screens: {
+                userSelect: document.getElementById('userSelectScreen'),
+                newUser: document.getElementById('newUserScreen'),
+                existingUser: document.getElementById('existingUserScreen'),
+                main: document.getElementById('mainScreen'),
+                chat: document.getElementById('chatScreen'),
+                call: document.getElementById('callScreen')
+            },
+            buttons: {
+                newUser: document.getElementById('newUserBtn'),
+                existingUser: document.getElementById('existingUserBtn'),
+                createUser: document.getElementById('createUserBtn'),
+                loadUser: document.getElementById('loadUserBtn'),
+                backToSelectFromNew: document.getElementById('backToSelectFromNew'),
+                backToSelectFromExisting: document.getElementById('backToSelectFromExisting'),
+                showContacts: document.getElementById('showContactsBtn'),
+                showQR: document.getElementById('showQRBtn'),
+                scanQR: document.getElementById('scanQRBtn'),
+                backToMain: document.getElementById('backToMainBtn'),
+                sendMessage: document.getElementById('sendMessageBtn'),
+                copyUserId: document.getElementById('copyUserIdBtn'),
+                shareQR: document.getElementById('shareQRBtn'),
+                downloadQR: document.getElementById('downloadQRBtn'),
+                callButton: document.getElementById('callButton'),
+                acceptCallBtn: document.getElementById('acceptCallBtn'),
+                rejectCallBtn: document.getElementById('rejectCallBtn'),
+                endCallBtn: document.getElementById('endCallBtn'),
+                muteCallBtn: document.getElementById('muteCallBtn')
+            },
+            inputs: {
+                newUserName: document.getElementById('newUserName'),
+                existingUserId: document.getElementById('existingUserId'),
+                message: document.getElementById('messageInput'),
+                userIdInput: document.getElementById('userIdInput'),
+                searchContacts: document.getElementById('searchContactsInput')
+            },
+            displays: {
+                contactsList: document.getElementById('contactsList'),
+                qrCode: document.getElementById('qrCodeCanvas'),
+                chatMessages: document.getElementById('chatMessages'),
+                chatAvatar: document.getElementById('chatAvatar'),
+                chatContactName: document.getElementById('chatContactName'),
+                qrVideo: document.getElementById('qrVideo'),
+                userNameDisplay: document.getElementById('userNameDisplay'),
+                userIdDisplayText: document.getElementById('userIdDisplayText'),
+                floatingButtons: document.querySelector('.floating-buttons'),
+                scanOverlay: document.querySelector('.scan-overlay'),
+                createUserFeedback: document.getElementById('createUserFeedback'),
+                loadUserFeedback: document.getElementById('loadUserFeedback'),
+                localVideo: document.getElementById('localVideo'),
+                remoteVideo: document.getElementById('remoteVideo'),
+                callContactName: document.getElementById('callContactName'),
+                callStatus: document.getElementById('callStatus')
+            },
+            sections: {
+                contacts: document.getElementById('contactsSection'),
+                qr: document.getElementById('qrSection'),
+                scan: document.getElementById('scanSection')
             }
+        };
+
+        // Funções utilitárias
+        const utils = {
+            escapeHtml: (text) => {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
             
-            ui.authSubmitBtn.disabled = true;
-            ui.authSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            formatTime: (timestamp) => new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             
-            state.gun.user().auth(alias, pass, ack => {
-                if (ack.err) {
-                    // User doesn't exist, try to create
-                    state.gun.user().create(alias, pass, createAck => {
-                        if (createAck.err) {
-                            ui.authSubmitBtn.disabled = false;
-                            ui.authSubmitBtn.innerHTML = '<i class="fas fa-check"></i> Continuar';
-                            return showNotification(createAck.err, 'error');
+            setButtonLoading: (button, isLoading) => {
+                button.classList.toggle('btn-loading', isLoading);
+                button.disabled = isLoading;
+            },
+            
+            showFeedback: (message, type, context) => {
+                const feedbackElement = elements.displays[`${context}Feedback`];
+                feedbackElement.textContent = message;
+                feedbackElement.className = `feedback-message feedback-${type}`;
+                feedbackElement.classList.remove('hidden');
+            },
+            
+            hideFeedback: (context) => elements.displays[`${context}Feedback`].classList.add('hidden'),
+            
+            copyToClipboard: (text) => {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Copiado para a área de transferência!');
+                }).catch(() => {
+                    const input = document.createElement('input');
+                    input.value = text;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    alert('Copiado para a área de transferência!');
+                });
+            },
+            
+            setupCallUI: (isCaller) => {
+                state.isInCall = true;
+                state.isCaller = isCaller;
+                elements.displays.callContactName.textContent = state.currentContact.name;
+                
+                if (isCaller) {
+                    elements.displays.callStatus.textContent = 'Chamando...';
+                    elements.buttons.acceptCallBtn.classList.add('hidden');
+                    elements.buttons.rejectCallBtn.classList.add('hidden');
+                    elements.buttons.endCallBtn.classList.remove('hidden');
+                    elements.buttons.muteCallBtn.classList.remove('hidden');
+                } else {
+                    elements.displays.callStatus.textContent = 'Chamada recebida';
+                    elements.buttons.acceptCallBtn.classList.remove('hidden');
+                    elements.buttons.rejectCallBtn.classList.remove('hidden');
+                    elements.buttons.endCallBtn.classList.add('hidden');
+                    elements.buttons.muteCallBtn.classList.add('hidden');
+                }
+                
+                elements.screens.call.classList.add('active');
+            },
+            
+            updateCallStatus: (status) => {
+                elements.displays.callStatus.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            },
+            
+            resetCallUI: () => {
+                state.isInCall = false;
+                state.isCaller = false;
+                state.callId = null;
+                elements.screens.call.classList.remove('active');
+                elements.buttons.acceptCallBtn.classList.add('hidden');
+                elements.buttons.rejectCallBtn.classList.add('hidden');
+                elements.buttons.endCallBtn.classList.add('hidden');
+                elements.buttons.muteCallBtn.classList.add('hidden');
+                
+                [elements.displays.localVideo, elements.displays.remoteVideo].forEach(video => {
+                    if (video.srcObject) {
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                        video.srcObject = null;
+                    }
+                });
+                
+                if (state.peerConnection) state.peerConnection.close();
+                state.peerConnection = null;
+                state.localStream = null;
+                state.remoteStream = null;
+                state.callDataChannel = null;
+                if (state.callListener) state.callListener.off();
+                state.callListener = null;
+            },
+            
+            toggleMute: () => {
+                if (!state.localStream) return;
+                state.isMuted = !state.isMuted;
+                state.localStream.getAudioTracks().forEach(track => track.enabled = !state.isMuted);
+                elements.buttons.muteCallBtn.innerHTML = state.isMuted ? 
+                    '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+                elements.buttons.muteCallBtn.title = state.isMuted ? 'Desmutar' : 'Mutar';
+            },
+            
+            filterContacts: (searchTerm) => {
+                const contacts = Object.values(state.contactsCache);
+                if (!searchTerm) return contacts;
+                
+                const term = searchTerm.toLowerCase();
+                return contacts.filter(contact => 
+                    contact.name.toLowerCase().includes(term)
+                );
+            },
+            
+            // Função para gerar uma chave única para a conversa entre dois usuários
+            getConversationKey: (userId1, userId2) => {
+                return [userId1, userId2].sort().join('_');
+            },
+            
+            // Nova função: verificar se uma mensagem é duplicada
+            isDuplicateMessage: (messageId, conversationKey) => {
+                // Verifica se já foi processada
+                if (state.processedMessageIds.has(messageId)) return true;
+                
+                // Verifica se já existe no cache
+                if (state.messagesCache[conversationKey]) {
+                    return state.messagesCache[conversationKey].some(msg => msg.id === messageId);
+                }
+                
+                return false;
+            }
+        };
+
+        // Operações do IndexedDB
+        const db = {
+            put: async (storeName, data) => {
+                const transaction = state.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                return new Promise((resolve, reject) => {
+                    const request = store.put(data);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            
+            get: async (storeName, key) => {
+                const transaction = state.db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                return new Promise((resolve, reject) => {
+                    const request = store.get(key);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            
+            getAll: async (storeName) => {
+                const transaction = state.db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                return new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            
+            getMessages: async (sender, receiver) => {
+                const transaction = state.db.transaction(['messages'], 'readonly');
+                const store = transaction.objectStore('messages');
+                const index = store.index('conversation');
+                
+                const range = IDBKeyRange.bound([sender, receiver], [sender, receiver]);
+                const range2 = IDBKeyRange.bound([receiver, sender], [receiver, sender]);
+                
+                const messages1 = await new Promise((resolve, reject) => {
+                    const request = index.getAll(range);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+                
+                const messages2 = await new Promise((resolve, reject) => {
+                    const request = index.getAll(range2);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+                
+                return [...messages1, ...messages2].sort((a, b) => a.timestamp - b.timestamp);
+            },
+            
+            delete: async (storeName, key) => {
+                const transaction = state.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                return new Promise((resolve, reject) => {
+                    const request = store.delete(key);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        };
+
+        // Funções para chamadas WebRTC
+        const webrtc = {
+            initPeerConnection: () => {
+                state.peerConnection = new RTCPeerConnection({ iceServers: state.iceServers });
+                
+                state.peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        gun.get('calls').get(state.callId).get('iceCandidates').get(state.currentUser.id).put({
+                            candidate: event.candidate,
+                            from: state.currentUser.id,
+                            to: state.currentContact.id,
+                            timestamp: Date.now()
+                        });
+                    }
+                };
+                
+                state.peerConnection.onconnectionstatechange = () => {
+                    const status = state.peerConnection.connectionState;
+                    utils.updateCallStatus(status);
+                    if (status === 'disconnected' || status === 'failed') webrtc.endCall();
+                };
+                
+                state.peerConnection.ontrack = (event) => {
+                    if (event.streams?.[0]) {
+                        state.remoteStream = event.streams[0];
+                        elements.displays.remoteVideo.srcObject = state.remoteStream;
+                        elements.displays.remoteVideo.classList.remove('small');
+                        utils.updateCallStatus('Chamada em andamento');
+                    }
+                };
+                
+                if (state.isCaller) {
+                    state.callDataChannel = state.peerConnection.createDataChannel('callControl');
+                    webrtc.setupDataChannel(state.callDataChannel);
+                } else {
+                    state.peerConnection.ondatachannel = (event) => {
+                        state.callDataChannel = event.channel;
+                        webrtc.setupDataChannel(state.callDataChannel);
+                    };
+                }
+            },
+            
+            setupDataChannel: (dataChannel) => {
+                dataChannel.onopen = () => console.log('Canal de dados aberto');
+                dataChannel.onclose = () => console.log('Canal de dados fechado');
+                dataChannel.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'end-call') webrtc.endCall();
+                };
+            },
+            
+            startCall: async () => {
+                if (!state.currentUser || !state.currentContact || state.isInCall) return;
+                
+                try {
+                    // Primeiro verificamos as permissões antes de iniciar a chamada
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: true, 
+                        video: true 
+                    }).catch(err => {
+                        console.error('Erro ao acessar mídia:', err);
+                        throw new Error('Permissões de câmera/microfone não concedidas');
+                    });
+
+                    // Se chegou aqui, as permissões foram concedidas
+                    state.callId = Gun.text.random(16);
+                    utils.setupCallUI(true);
+                    webrtc.initPeerConnection();
+                    
+                    state.localStream = stream;
+                    state.localStream.getTracks().forEach(track => state.peerConnection.addTrack(track, state.localStream));
+                    elements.displays.localVideo.srcObject = state.localStream;
+                    
+                    const offer = await state.peerConnection.createOffer({
+                        offerToReceiveAudio: true,
+                        offerToReceiveVideo: true
+                    });
+                    
+                    await state.peerConnection.setLocalDescription(offer);
+                    
+                    gun.get('calls').get(state.callId).put({
+                        from: state.currentUser.id,
+                        to: state.currentContact.id,
+                        offer: offer,
+                        timestamp: Date.now()
+                    });
+                    
+                    const callMessage = {
+                        id: Gun.text.random(16),
+                        sender: state.currentUser.id,
+                        receiver: state.currentContact.id,
+                        text: `Chamada de vídeo recebida!`,
+                        timestamp: Date.now(),
+                        expiresAt: Date.now() + (24 * 60 * 60 * 1000),
+                        callId: state.callId
+                    };
+                    
+                    // Marcar como processada antes de enviar
+                    state.processedMessageIds.add(callMessage.id);
+                    
+                    gun.get('users').get(state.currentContact.id).get('messages').get(callMessage.id).put(callMessage);
+                    gun.get('users').get(state.currentUser.id).get('messages').get(callMessage.id).put(callMessage);
+                    
+                    gun.get('calls').get(state.callId).get('answer').on(async (answer) => {
+                        if (answer?.from === state.currentContact.id) {
+                            try {
+                                await state.peerConnection.setRemoteDescription(new RTCSessionDescription(answer.answer));
+                            } catch (error) {
+                                console.error('Erro ao configurar resposta remota:', error);
+                                webrtc.endCall();
+                            }
+                        }
+                    });
+                    
+                    gun.get('calls').get(state.callId).get('iceCandidates').get(state.currentContact.id).on(async (candidateData) => {
+                        if (candidateData?.candidate) {
+                            try {
+                                await state.peerConnection.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                            } catch (error) {
+                                console.error('Erro ao adicionar ICE candidate:', error);
+                            }
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        if (state.isInCall && !state.peerConnection.remoteDescription) {
+                            alert('Chamada não atendida');
+                            webrtc.endCall();
+                        }
+                    }, 30000);
+                } catch (error) {
+                    console.error('Erro ao iniciar chamada:', error);
+                    alert('Erro ao iniciar chamada: ' + (error.message || 'Verifique se você permitiu o acesso à câmera e ao microfone.'));
+                    webrtc.endCall();
+                }
+            },
+            
+            listenForCalls: () => {
+                if (!state.currentUser || state.callListener) return;
+                
+                state.callListener = gun.get('users').get(state.currentUser.id).get('calls').map().on(async (call, callId) => {
+                    if (!call || state.isInCall || !call.from || call.from === state.currentUser.id) return;
+                    
+                    if (call.to === state.currentUser.id) {
+                        const contact = state.contactsCache[call.from];
+                        if (!contact) return;
+                        
+                        state.callId = callId;
+                        state.currentContact = contact;
+                        utils.setupCallUI(false);
+                        webrtc.initPeerConnection();
+                        
+                        try {
+                            // Verifica permissões antes de continuar
+                            const stream = await navigator.mediaDevices.getUserMedia({
+                                audio: true,
+                                video: true
+                            }).catch(err => {
+                                console.error('Erro ao acessar mídia:', err);
+                                throw new Error('Permissões de câmera/microfone não concedidas');
+                            });
+
+                            state.localStream = stream;
+                            state.localStream.getTracks().forEach(track => state.peerConnection.addTrack(track, state.localStream));
+                            elements.displays.localVideo.srcObject = state.localStream;
+                            await state.peerConnection.setRemoteDescription(new RTCSessionDescription(call.offer));
+                            
+                            const answer = await state.peerConnection.createAnswer();
+                            await state.peerConnection.setLocalDescription(answer);
+                            
+                            gun.get('calls').get(callId).get('answer').put({
+                                from: state.currentUser.id,
+                                to: call.from,
+                                answer: answer,
+                                timestamp: Date.now()
+                            });
+                            
+                            gun.get('calls').get(callId).get('iceCandidates').get(call.from).on(async (candidateData) => {
+                                if (candidateData?.candidate) {
+                                    try {
+                                        await state.peerConnection.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                                    } catch (error) {
+                                        console.error('Erro ao adicionar ICE candidate:', error);
+                                    }
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Erro ao atender chamada:', error);
+                            alert('Erro ao atender chamada: ' + (error.message || 'Verifique as permissões de câmera e microfone.'));
+                            webrtc.endCall();
+                        }
+                    }
+                });
+            },
+            
+            acceptCall: () => {
+                if (!state.isInCall || state.isCaller) return;
+                elements.buttons.acceptCallBtn.classList.add('hidden');
+                elements.buttons.rejectCallBtn.classList.add('hidden');
+                elements.buttons.endCallBtn.classList.remove('hidden');
+                elements.buttons.muteCallBtn.classList.remove('hidden');
+                utils.updateCallStatus('Chamada em andamento');
+            },
+            
+            endCall: () => {
+                if (!state.isInCall) return;
+                
+                if (state.callDataChannel?.readyState === 'open') {
+                    state.callDataChannel.send(JSON.stringify({ type: 'end-call' }));
+                }
+                
+                if (state.callId) {
+                    gun.get('calls').get(state.callId).put(null);
+                    gun.get('calls').get(state.callId).get('answer').put(null);
+                    gun.get('calls').get(state.callId).get('iceCandidates').get(state.currentUser.id).put(null);
+                    gun.get('calls').get(state.callId).get('iceCandidates').get(state.currentContact.id).put(null);
+                }
+                
+                utils.resetCallUI();
+            },
+            
+            rejectCall: () => {
+                if (!state.isInCall || state.isCaller) return;
+                if (state.callId) gun.get('calls').get(state.callId).put(null);
+                utils.resetCallUI();
+            },
+            
+            joinCall: (callId) => {
+                if (!state.currentUser || state.isInCall) return;
+                
+                gun.get('calls').get(callId).once(async (callData) => {
+                    if (!callData?.from) {
+                        alert('Chamada não encontrada ou já encerrada.');
+                        return;
+                    }
+                    
+                    if (callData.to !== state.currentUser.id) {
+                        alert('Você não é o destinatário desta chamada.');
+                        return;
+                    }
+                    
+                    const contact = state.contactsCache[callData.from];
+                    if (!contact) {
+                        alert('Contato não encontrado em sua lista.');
+                        return;
+                    }
+                    
+                    state.currentContact = contact;
+                    state.callId = callId;
+                    utils.setupCallUI(false);
+                    webrtc.initPeerConnection();
+                    
+                    try {
+                        // Verifica permissões antes de continuar
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            audio: true,
+                            video: true
+                        }).catch(err => {
+                            console.error('Erro ao acessar mídia:', err);
+                            throw new Error('Permissões de câmera/microfone não concedidas');
+                        });
+
+                        state.localStream = stream;
+                        state.localStream.getTracks().forEach(track => state.peerConnection.addTrack(track, state.localStream));
+                        elements.displays.localVideo.srcObject = state.localStream;
+                        await state.peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
+                        
+                        const answer = await state.peerConnection.createAnswer();
+                        await state.peerConnection.setLocalDescription(answer);
+                        
+                        gun.get('calls').get(callId).get('answer').put({
+                            from: state.currentUser.id,
+                            to: callData.from,
+                            answer: answer,
+                            timestamp: Date.now()
+                        });
+                        
+                        gun.get('calls').get(callId).get('iceCandidates').get(callData.from).on(async (candidateData) => {
+                            if (candidateData?.candidate) {
+                                try {
+                                    await state.peerConnection.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
+                                } catch (error) {
+                                    console.error('Erro ao adicionar ICE candidate:', error);
+                                }
+                            }
+                        });
+                        
+                        webrtc.acceptCall();
+                    } catch (error) {
+                        console.error('Erro ao entrar na chamada:', error);
+                        alert('Erro ao entrar na chamada: ' + (error.message || 'Verifique as permissões de câmera e microfone.'));
+                        webrtc.endCall();
+                    }
+                });
+            }
+        };
+
+        // Funções principais da aplicação
+        const app = {
+            init: async () => {
+                try {
+                    state.db = await app.initIndexedDB();
+                    app.setupEventListeners();
+                    await app.checkForExistingUser();
+                    app.startMessageCleanupInterval();
+                    webrtc.listenForCalls();
+                    app.requestNotificationPermission();
+                } catch (error) {
+                    console.error('Erro na inicialização:', error);
+                    alert('Erro ao inicializar o aplicativo. Por favor, recarregue a página.');
+                }
+            },
+            
+            requestNotificationPermission: () => {
+                if (!("Notification" in window)) return console.warn("Este navegador não suporta notificações!");
+                if (state.currentUser) Notification.requestPermission();
+            },
+            
+            initIndexedDB: () => new Promise((resolve, reject) => {
+                const request = indexedDB.open('BunnyChatDB', 3);
+                request.onerror = (event) => reject(event.target.error);
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('users')) db.createObjectStore('users', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('contacts')) db.createObjectStore('contacts', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('messages')) {
+                        const messagesStore = db.createObjectStore('messages', { keyPath: 'id' });
+                        messagesStore.createIndex('conversation', ['sender', 'receiver'], { unique: false });
+                    }
+                };
+            }),
+            
+            setupEventListeners: () => {
+                // Navegação
+                elements.buttons.newUser.addEventListener('click', () => app.showScreen('newUser'));
+                elements.buttons.existingUser.addEventListener('click', () => app.showScreen('existingUser'));
+                elements.buttons.backToSelectFromNew.addEventListener('click', () => app.showScreen('userSelect'));
+                elements.buttons.backToSelectFromExisting.addEventListener('click', () => app.showScreen('userSelect'));
+                elements.buttons.backToMain.addEventListener('click', () => {
+                    app.stopQrScanner();
+                    app.showScreen('main');
+                });
+                
+                // Usuário
+                elements.buttons.createUser.addEventListener('click', app.createUser);
+                elements.buttons.loadUser.addEventListener('click', app.loadUser);
+                
+                // Ações principais
+                elements.buttons.showContacts.addEventListener('click', () => app.toggleSection('contacts'));
+                elements.buttons.showQR.addEventListener('click', () => {
+                    app.toggleSection('qr');
+                    app.showUserQRInfo();
+                    app.generateQrCode();
+                });
+                elements.buttons.scanQR.addEventListener('click', () => app.toggleSection('scan'));
+                
+                // Chat
+                elements.buttons.sendMessage.addEventListener('click', app.sendMessage);
+                elements.inputs.message.addEventListener('keypress', (e) => e.key === 'Enter' && app.sendMessage());
+                
+                // Chamadas WebRTC
+                elements.buttons.callButton.addEventListener('click', () => state.currentContact && webrtc.startCall());
+                elements.buttons.acceptCallBtn.addEventListener('click', webrtc.acceptCall);
+                elements.buttons.rejectCallBtn.addEventListener('click', webrtc.rejectCall);
+                elements.buttons.endCallBtn.addEventListener('click', webrtc.endCall);
+                elements.buttons.muteCallBtn.addEventListener('click', utils.toggleMute);
+                
+                // Utilitários
+                elements.buttons.copyUserId.addEventListener('click', app.copyUserId);
+                elements.buttons.shareQR.addEventListener('click', app.shareQRCode);
+                elements.buttons.downloadQR.addEventListener('click', app.downloadQRCode);
+                
+                // Busca de contatos
+                elements.inputs.searchContacts.addEventListener('input', () => {
+                    app.renderContacts(utils.filterContacts(elements.inputs.searchContacts.value.trim()));
+                });
+                
+                // Event delegation para botões de delete e call
+                elements.displays.contactsList.addEventListener('click', (e) => {
+                    const deleteBtn = e.target.closest('.delete-contact-btn');
+                    const callBtn = e.target.closest('.call-contact-btn');
+                    const contactItem = e.target.closest('.contact-item');
+                    
+                    if (deleteBtn) {
+                        e.stopPropagation();
+                        app.removeContact(deleteBtn.getAttribute('data-contact-id'));
+                    } else if (callBtn) {
+                        e.stopPropagation();
+                        const contact = state.contactsCache[callBtn.getAttribute('data-contact-id')];
+                        if (contact) {
+                            state.currentContact = contact;
+                            webrtc.startCall();
+                        }
+                    } else if (contactItem?.getAttribute('data-contact-id')) {
+                        const contactId = contactItem.getAttribute('data-contact-id');
+                        if (state.contactsCache[contactId]) {
+                            state.currentContact = state.contactsCache[contactId];
+                            app.showChatScreen();
+                        }
+                    }
+                });
+                
+                // Event delegation para botão de chamada nas mensagens
+                elements.displays.chatMessages.addEventListener('click', (e) => {
+                    const joinCallBtn = e.target.closest('.join-call-btn');
+                    if (joinCallBtn) {
+                        e.stopPropagation();
+                        webrtc.joinCall(joinCallBtn.getAttribute('data-call-id'));
+                    }
+                });
+            },
+            
+            checkForExistingUser: async () => {
+                try {
+                    const users = await db.getAll('users');
+                    if (users.length > 0) {
+                        state.currentUser = users[0];
+                        await app.loadLocalData();
+                        app.showScreen('main');
+                        await app.syncContacts();
+                    } else {
+                        app.showScreen('userSelect');
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar usuário:', error);
+                    app.showScreen('userSelect');
+                }
+            },
+            
+            loadLocalData: async () => {
+                try {
+                    const contacts = await db.getAll('contacts');
+                    state.contactsCache = contacts.reduce((acc, contact) => (acc[contact.id] = contact, acc), {});
+                    app.renderContacts(Object.values(state.contactsCache));
+                    
+                    if (state.currentUser && state.currentContact) {
+                        await app.syncMessages();
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar dados locais:', error);
+                }
+            },
+            
+            showScreen: (screenName) => {
+                Object.values(elements.screens).forEach(screen => screen.classList.remove('active'));
+                elements.screens[screenName].classList.add('active');
+                
+                const floatingButtons = document.querySelector('.floating-buttons');
+                floatingButtons.classList.toggle('visible', screenName === 'main' || screenName === 'chat');
+                
+                if (screenName === 'main') {
+                    elements.sections.contacts.style.display = 'block';
+                    app.syncContacts();
+                }
+            },
+            
+            toggleSection: (sectionName) => {
+                Object.values(elements.sections).forEach(section => section.classList.add('hidden'));
+                elements.sections[sectionName].classList.remove('hidden');
+                sectionName === 'scan' ? app.startQrScanner() : app.stopQrScanner();
+            },
+            
+            createUser: async () => {
+                const userName = elements.inputs.newUserName.value.trim();
+                if (!userName) return utils.showFeedback('Por favor, digite um nome de usuário', 'error', 'createUser');
+                
+                utils.setButtonLoading(elements.buttons.createUser, true);
+                
+                const userId = Gun.text.random(16);
+                const user = { 
+                    id: userId, 
+                    name: userName, 
+                    createdAt: Date.now(),
+                    lastSeen: Date.now()
+                };
+                
+                utils.hideFeedback('createUser');
+                
+                try {
+                    await db.put('users', user);
+                    gun.get('users').get(userId).put(user);
+                    
+                    state.currentUser = user;
+                    state.contactsCache = {};
+                    state.messagesCache = {};
+                    state.processedMessageIds.clear(); // Limpar IDs processados
+                    
+                    utils.showFeedback('Usuário criado com sucesso!', 'success', 'createUser');
+                    elements.inputs.newUserName.value = '';
+                    
+                    setTimeout(() => {
+                        utils.hideFeedback('createUser');
+                        app.showScreen('main');
+                        app.showUserQRInfo();
+                        app.generateQrCode();
+                        app.requestNotificationPermission();
+                    }, 800);
+                } catch (error) {
+                    console.error('Erro ao criar usuário:', error);
+                    utils.showFeedback('Erro ao criar usuário. Tente novamente.', 'error', 'createUser');
+                } finally {
+                    utils.setButtonLoading(elements.buttons.createUser, false);
+                }
+            },
+            
+            loadUser: async () => {
+                const userId = elements.inputs.existingUserId.value.trim();
+                if (!userId) return utils.showFeedback('Por favor, digite um ID de usuário', 'error', 'loadUser');
+
+                utils.setButtonLoading(elements.buttons.loadUser, true);
+                utils.hideFeedback('loadUser');
+
+                try {
+                    // Primeiro verifica no IndexedDB local
+                    let user = await db.get('users', userId);
+                    
+                    // Se não encontrou localmente, busca no Gun.js
+                    if (!user) {
+                        user = await new Promise((resolve) => {
+                            const timeout = setTimeout(() => resolve(null), 5000); // Timeout de 5 segundos
+                            
+                            gun.get('users').get(userId).once((data, key) => {
+                                clearTimeout(timeout);
+                                // Verifica se os dados recebidos são válidos
+                                if (data && typeof data === 'object' && data.id === userId) {
+                                    resolve(data);
+                                } else {
+                                    resolve(null);
+                                }
+                            });
+                        });
+
+                        if (user) {
+                            // Atualiza lastSeen e salva o usuário no IndexedDB
+                            user.lastSeen = Date.now();
+                            await db.put('users', user);
+                        }
+                    }
+
+                    if (user?.id) {
+                        state.currentUser = user;
+                        await app.loadLocalData();
+
+                        utils.showFeedback('Usuário carregado com sucesso!', 'success', 'loadUser');
+                        elements.inputs.existingUserId.value = '';
+
+                        setTimeout(() => {
+                            utils.hideFeedback('loadUser');
+                            app.showScreen('main');
+                            app.showUserQRInfo();
+                            app.generateQrCode();
+                            app.requestNotificationPermission();
+                        }, 1000);
+                    } else {
+                        utils.showFeedback('Usuário não encontrado. Verifique o ID e tente novamente.', 'error', 'loadUser');
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar usuário:', error);
+                    utils.showFeedback('Erro ao carregar usuário. Tente novamente.', 'error', 'loadUser');
+                } finally {
+                    utils.setButtonLoading(elements.buttons.loadUser, false);
+                }
+            },
+            
+            showUserQRInfo: () => {
+                if (!state.currentUser) return;
+                elements.displays.userNameDisplay.textContent = state.currentUser.name;
+                elements.displays.userIdDisplayText.textContent = state.currentUser.id;
+                elements.inputs.userIdInput.value = state.currentUser.id;
+            },
+            
+            generateQrCode: () => {
+                if (!state.currentUser) return;
+                
+                const qrData = JSON.stringify({
+                    app: "BunnyChat",
+                    version: 1,
+                    userId: state.currentUser.id,
+                    userName: state.currentUser.name
+                });
+                
+                const canvas = elements.displays.qrCode;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.width = canvas.height = 200;
+                
+                QRCode.toCanvas(canvas, qrData, {
+                    width: 200,
+                    margin: 2,
+                    color: { dark: '#5A2A3E', light: '#FFF2F5' }
+                }, (error) => error && console.error('Erro ao gerar QR Code:', error));
+                
+                elements.inputs.userIdInput.value = state.currentUser.id;
+            },
+            
+            copyUserId: () => utils.copyToClipboard(state.currentUser.id),
+            
+            shareQRCode: () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Meu BunnyChat QR Code',
+                        text: `Adicione-me no BunnyChat! Meu nome: ${state.currentUser.name}`,
+                        url: `${window.location.href}?user=${state.currentUser.id}`
+                    }).catch(() => app.copyUserId());
+                } else {
+                    app.copyUserId();
+                }
+            },
+            
+            downloadQRCode: () => {
+                const link = document.createElement('a');
+                link.download = `BunnyChat-${state.currentUser.name}.png`;
+                link.href = elements.displays.qrCode.toDataURL();
+                link.click();
+            },
+            
+            syncContacts: async () => {
+                if (!state.currentUser) return;
+                
+                try {
+                    const contacts = await db.getAll('contacts');
+                    state.contactsCache = contacts.reduce((acc, contact) => (acc[contact.id] = contact, acc), {});
+                    app.renderContacts(Object.values(state.contactsCache));
+                    
+                    state.gunListeners.forEach(listener => listener.off());
+                    state.gunListeners = [];
+                    
+                    const listener = gun.get('users').get(state.currentUser.id).get('contacts').map().on(async (contact, id) => {
+                        if (!contact) {
+                            if (state.contactsCache[id]) {
+                                delete state.contactsCache[id];
+                                await db.delete('contacts', id);
+                                app.renderContacts(Object.values(state.contactsCache));
+                            }
+                            return;
                         }
                         
-                        // User created, now auth
-                        state.gun.user().auth(alias, pass, finalAck => {
-                            if (finalAck.err) {
-                                ui.authSubmitBtn.disabled = false;
-                                ui.authSubmitBtn.innerHTML = '<i class="fas fa-check"></i> Continuar';
-                                return showNotification(finalAck.err, 'error');
-                            }
-                            onAuthSuccess(finalAck.pub, alias);
-                        });
+                        state.contactsCache[id] = contact;
+                        await db.put('contacts', contact);
+                        app.renderContacts(Object.values(state.contactsCache));
                     });
-                } else {
-                    onAuthSuccess(ack.pub, alias);
-                }
-            });
-        };
-        
-        const onAuthSuccess = (pub, alias) => {
-            state.user = state.gun.user();
-            // Initialize user profile if it doesn't exist
-            state.gun.get(`~${pub}`).once(profile => {
-                if (!profile) {
-                    state.gun.get(`~${pub}`).put({ alias, bio: '' });
-                }
-            });
-            state.gun.get('users').get(pub).put({ alias });
-            
-            updateUIForUser();
-            ui.authModal.classList.remove('active');
-            ui.authSubmitBtn.disabled = false;
-            ui.authSubmitBtn.innerHTML = '<i class="fas fa-check"></i> Continuar';
-            showNotification('Login bem-sucedido!', 'success');
-            
-            // Load user profile
-            state.gun.get(`~${pub}`).once(profile => {
-                state.currentUserProfile = profile;
-            });
-        };
-        
-        const logout = () => {
-            state.gun.user().leave();
-            state.user = null;
-            state.currentUserProfile = null;
-            updateUIForUser();
-            navigateTo('feed');
-            showNotification('Você saiu da sua conta.', 'warning');
-        };
-        
-        const updateUIForUser = () => {
-            if (state.user?.is) {
-                ui.userAlias.textContent = state.user.is.alias;
-                ui.loginBtn.classList.add('hidden');
-                ui.logoutBtn.classList.remove('hidden');
-            } else {
-                ui.userAlias.textContent = '';
-                ui.loginBtn.classList.remove('hidden');
-                ui.logoutBtn.classList.add('hidden');
-            }
-        };
-        
-        // Feed functionality
-        const loadFeed = () => {
-            ui.postsContainer.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Carregando posts...</div>
-                </div>
-            `;
-            
-            state.postsData.clear();
-            
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-            }
-            
-            // Community header if in community view
-            if (state.currentCommunity.id) {
-                ui.feedHeaderContainer.innerHTML = `
-                    <div class="feed-header">
-                        <span>Comunidade: <strong>${sanitizeHTML(state.currentCommunity.name)}</strong></span>
-                        <button id="back-to-global-feed" class="btn btn-outline btn-sm">
-                            <i class="fas fa-arrow-left"></i> Voltar para Feed Global
-                        </button>
-                    </div>
-                `;
-                ui.feedHeaderContainer.classList.remove('hidden');
-                
-                document.getElementById('back-to-global-feed').addEventListener('click', () => {
-                    state.currentCommunity = { id: null, name: null };
-                    navigateTo('feed');
-                });
-            } else {
-                ui.feedHeaderContainer.classList.add('hidden');
-            }
-            
-            // Subscribe to posts
-            const sub = state.gun.get('posts').map().on((post, id) => {
-                if (!post) return;
-                
-                if (post.content && post.lastActivityAt) {
-                    // Check if post belongs to current community
-                    if (state.currentCommunity.id && post.communityId !== state.currentCommunity.id) {
-                        state.postsData.delete(id);
-                    } else {
-                        state.postsData.set(id, { ...post, id });
-                    }
-                } else {
-                    state.postsData.delete(id);
-                }
-                
-                renderSortedFeed();
-            });
-            
-            state.activeSubscriptions.set('feed', sub);
-            
-            // Update countdowns every minute
-            state.countdownInterval = setInterval(updateAllCountdowns, 60000);
-        };
-        
-        const renderSortedFeed = () => {
-            const now = Date.now();
-            const validPosts = Array.from(state.postsData.values())
-                .filter(p => (now - p.lastActivityAt < CONFIG.POST_EXPIRATION_MS))
-                .sort((a, b) => b.lastActivityAt - a.lastActivityAt);
-                
-            if (validPosts.length === 0) {
-                ui.postsContainer.innerHTML = `
-                    <div class="card">
-                        <div style="text-align: center; padding: 30px; color: var(--gray);">
-                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                            <h3>Nenhum post ativo no momento</h3>
-                            <p>Seja o primeiro a compartilhar algo!</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            ui.postsContainer.innerHTML = '';
-            
-            validPosts.forEach(post => {
-                renderPost(post);
-            });
-        };
-        
-        const renderPost = async (post) => {
-            // Check if post already exists to avoid duplication
-            if (document.getElementById(`post-${post.id}`)) {
-                updatePost(post);
-                return;
-            }
-            
-            const postEl = document.createElement('div');
-            postEl.className = 'card fade-in';
-            postEl.id = `post-${post.id}`;
-            
-            // Get author profile from cache if available
-            let authorProfile = state.usersCache.get(post.authorPub);
-            if (!authorProfile) {
-                authorProfile = await new Promise(resolve => {
-                    state.gun.get(`~${post.authorPub}`).once(profile => {
-                        const profileData = profile || { alias: 'Anônimo' };
-                        state.usersCache.set(post.authorPub, profileData);
-                        resolve(profileData);
-                    });
-                });
-            }
-            
-            postEl.innerHTML = `
-                <div class="post-header">
-                    <div class="post-author-info">
-                        ${renderAvatar(authorProfile)}
-                        <div>
-                            <div class="post-author">${sanitizeHTML(authorProfile.alias)}</div>
-                            <div class="post-time">${formatTime(post.createdAt)}</div>
-                        </div>
-                    </div>
-                    <div class="post-countdown" data-timestamp="${post.lastActivityAt}">
-                        ${formatCountdown(post.lastActivityAt)}
-                    </div>
-                </div>
-                <div class="post-content">${sanitizeHTML(post.content)}</div>
-                <div class="post-actions">
-                    <div class="post-action" data-action="like">
-                        <i class="fas fa-heart"></i> 
-                        <span class="like-count">0</span>
-                    </div>
-                    <div class="post-action" data-action="comment">
-                        <i class="fas fa-comment"></i> 
-                        <span>Comentar</span>
-                    </div>
-                </div>
-                <div class="comments-section"></div>
-            `;
-            
-            ui.postsContainer.appendChild(postEl);
-            
-            // Add event listeners
-            postEl.querySelector('[data-action="like"]').addEventListener('click', () => 
-                handlePostInteraction(post.id, 'like'));
-                
-            postEl.querySelector('[data-action="comment"]').addEventListener('click', () => {
-                const commentsSection = postEl.querySelector('.comments-section');
-                const isVisible = commentsSection.style.display === 'block';
-                commentsSection.style.display = isVisible ? 'none' : 'block';
-                
-                if (!isVisible) {
-                    renderComments(post.id, commentsSection);
-                }
-            });
-            
-            updateLikes(post.id, postEl);
-        };
-        
-        const updatePost = (post) => {
-            const postEl = document.getElementById(`post-${post.id}`);
-            if (!postEl) return;
-            
-            const countdownEl = postEl.querySelector('.post-countdown');
-            if (countdownEl) {
-                countdownEl.textContent = formatCountdown(post.lastActivityAt);
-            }
-        };
-        
-        const createPost = () => {
-            const content = ui.postContent.value.trim();
-            
-            if (!content) {
-                return showNotification('Escreva algo para publicar.', 'error');
-            }
-            
-            if (content.length > CONFIG.MAX_POST_LENGTH) {
-                return showNotification(`O post deve ter no máximo ${CONFIG.MAX_POST_LENGTH} caracteres.`, 'error');
-            }
-            
-            if (!state.user?.is) {
-                return showNotification('Faça login para publicar.', 'error');
-            }
-            
-            const now = Date.now();
-            const postData = {
-                authorPub: state.user.is.pub,
-                content: content,
-                createdAt: now,
-                lastActivityAt: now
-            };
-            
-            if (state.currentCommunity.id) {
-                postData.communityId = state.currentCommunity.id;
-            }
-            
-            const postRef = state.gun.get('posts').set(postData);
-            state.gun.user().get('posts').set(postRef);
-            
-            ui.postContent.value = '';
-            showNotification('Post publicado com sucesso!');
-        };
-        
-        const handlePostInteraction = (postId, type) => {
-            if (!state.user?.is) {
-                return showNotification('Faça login para interagir.', 'error');
-            }
-            
-            // Update last activity
-            state.gun.get('posts').get(postId).get('lastActivityAt').put(Date.now());
-            
-            if (type === 'like') {
-                const likeRef = state.gun.get('posts').get(postId).get('likes').get(state.user.is.pub);
-                likeRef.once(currentVal => {
-                    likeRef.put(!currentVal);
                     
-                    // Visual feedback
-                    const likeBtn = document.querySelector(`#post-${postId} [data-action="like"]`);
-                    if (likeBtn) {
-                        likeBtn.classList.toggle('liked', !currentVal);
-                        if (!currentVal) {
-                            likeBtn.classList.add('pulse');
-                            setTimeout(() => likeBtn.classList.remove('pulse'), 500);
-                        }
-                    }
-                });
-            }
-        };
-        
-        const updateLikes = (postId, postEl) => {
-            const likesRef = state.gun.get('posts').get(postId).get('likes');
-            const likeCountEl = postEl.querySelector('.like-count');
-            const likeActionEl = postEl.querySelector('[data-action="like"]');
-            
-            const sub = likesRef.map().on(() => {
-                let count = 0;
-                likesRef.map().once(val => {
-                    if (val) count++;
-                });
-                
-                if (state.user?.is) {
-                    likesRef.get(state.user.is.pub).once(val => {
-                        likeActionEl.classList.toggle('liked', !!val);
-                    });
+                    state.gunListeners.push(listener);
+                } catch (error) {
+                    console.error('Erro ao sincronizar contatos:', error);
                 }
+            },
+            
+            renderContacts: (contacts) => {
+                elements.displays.contactsList.innerHTML = '';
                 
-                setTimeout(() => {
-                    if (likeCountEl) likeCountEl.textContent = count;
-                }, 50);
-            });
-            
-            state.activeSubscriptions.set(`likes-${postId}`, sub);
-        };
-        
-        const renderComments = (postId, container) => {
-            container.innerHTML = `
-                <div class="comment-form">
-                    <input type="text" class="form-control comment-input" placeholder="Escreva um comentário...">
-                    <button class="btn btn-sm comment-submit-btn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-                <div class="comments-list"></div>
-            `;
-            
-            container.querySelector('.comment-submit-btn').addEventListener('click', () => 
-                createComment(postId, container));
-                
-            container.querySelector('.comment-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    createComment(postId, container);
-                }
-            });
-            
-            const listEl = container.querySelector('.comments-list');
-            const sub = state.gun.get('posts').get(postId).get('comments').map().on(async (comment, id) => {
-                if (!comment?.content) {
-                    const el = document.getElementById(id);
-                    if (el) el.remove();
+                if (contacts.length === 0) {
+                    elements.displays.contactsList.innerHTML = `
+                        <div class="no-contacts">
+                            <i class="fas fa-user-friends" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px;"></i>
+                            <p>Nenhum contato encontrado</p>
+                        </div>
+                    `;
                     return;
                 }
                 
-                let commentEl = document.getElementById(id);
-                if (!commentEl) {
-                    commentEl = document.createElement('div');
-                    commentEl.className = 'comment fade-in';
-                    commentEl.id = id;
-                    listEl.prepend(commentEl);
-                }
-                
-                // Get author profile
-                let author = state.usersCache.get(comment.authorPub);
-                if (!author) {
-                    author = await new Promise(resolve => {
-                        state.gun.get(`~${comment.authorPub}`).once(profile => {
-                            const profileData = profile || { alias: 'Anônimo' };
-                            state.usersCache.set(comment.authorPub, profileData);
-                            resolve(profileData);
-                        });
-                    });
-                }
-                
-                commentEl.innerHTML = `
-                    <span class="comment-author">${sanitizeHTML(author.alias)}:</span> 
-                    ${sanitizeHTML(comment.content)}
-                    <div style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">
-                        ${formatTime(comment.createdAt)}
-                    </div>
-                `;
-            });
-            
-            state.activeSubscriptions.set(`comments-${postId}`, sub);
-        };
-        
-        const createComment = (postId, container) => {
-            const input = container.querySelector('.comment-input');
-            const content = input.value.trim();
-            
-            if (!content) {
-                return showNotification('Escreva um comentário.', 'error');
-            }
-            
-            handlePostInteraction(postId, 'comment');
-            
-            const commentData = {
-                authorPub: state.user.is.pub,
-                content: content,
-                createdAt: Date.now()
-            };
-            
-            state.gun.get('posts').get(postId).get('comments').set(commentData);
-            input.value = '';
-        };
-        
-        const updateAllCountdowns = () => {
-            document.querySelectorAll('.post-countdown').forEach(el => {
-                const timestamp = parseInt(el.dataset.timestamp, 10);
-                if (timestamp) {
-                    el.textContent = formatCountdown(timestamp);
-                    
-                    // Remove expired posts from view
-                    if (Date.now() - timestamp > CONFIG.POST_EXPIRATION_MS) {
-                        const postId = el.closest('.card')?.id.replace('post-', '');
-                        if (postId) {
-                            state.postsData.delete(postId);
-                            renderSortedFeed();
-                        }
-                    }
-                }
-            });
-        };
-        
-        // Profile functionality
-        const loadProfile = () => {
-            if (!state.user?.is) {
-                ui.profileContainer.innerHTML = `
-                    <div class="card">
-                        <div style="text-align: center; padding: 30px;">
-                            <i class="fas fa-user-lock" style="font-size: 3rem; color: var(--gray); margin-bottom: 15px;"></i>
-                            <h3>Faça login para ver seu perfil</h3>
-                            <button id="profile-login-btn" class="btn" style="margin-top: 15px;">
-                                <i class="fas fa-sign-in-alt"></i> Fazer Login
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('profile-login-btn').addEventListener('click', () => {
-                    ui.authModal.classList.add('active');
-                });
-                
-                return;
-            }
-            
-            ui.profileContainer.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Carregando perfil...</div>
-                </div>
-            `;
-            
-            state.gun.get(`~${state.user.is.pub}`).once(profile => {
-                if (!profile) {
-                    profile = { alias: state.user.is.alias, bio: '' };
-                    state.gun.get(`~${state.user.is.pub}`).put(profile);
-                }
-                
-                state.currentUserProfile = profile;
-                
-                ui.profileContainer.innerHTML = `
-                    <div class="card">
-                        <div class="profile-header">
-                            <div class="profile-avatar" style="${profile.avatar ? `background-image: url('${profile.avatar}')` : ''}">
-                                ${!profile.avatar ? profile.alias.charAt(0).toUpperCase() : ''}
-                                <div class="profile-avatar-edit">
-                                    <i class="fas fa-camera"></i>
-                                </div>
-                            </div>
-                            <h1 class="profile-name">${sanitizeHTML(profile.alias || 'Usuário')}</h1>
-                            <div class="profile-bio">${sanitizeHTML(profile.bio || 'Sem biografia. Clique em Editar Perfil para adicionar uma.')}</div>
-                            
-                            <div class="profile-stats">
-                                <div class="stat-item">
-                                    <div id="post-count" class="stat-number">0</div>
-                                    <div class="stat-label">Posts</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div id="community-count" class="stat-number">0</div>
-                                    <div class="stat-label">Comunidades</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div id="connection-count" class="stat-number">0</div>
-                                    <div class="stat-label">Conexões</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tab-container">
-                            <div class="tab active" data-tab="posts">Posts</div>
-                            <div class="tab" data-tab="communities">Comunidades</div>
-                            <div class="tab" data-tab="connections">Conexões</div>
-                        </div>
-                        
-                        <div id="posts-tab-content" class="tab-content active"></div>
-                        <div id="communities-tab-content" class="tab-content"></div>
-                        <div id="connections-tab-content" class="tab-content"></div>
-                    </div>
-                    
-                    <div class="card">
-                        <h3><i class="fas fa-edit"></i> Editar Perfil</h3>
-                        <div class="form-group">
-                            <label for="edit-bio">Biografia</label>
-                            <textarea id="edit-bio" class="form-control" rows="3" placeholder="Fale um pouco sobre você..." maxlength="${CONFIG.MAX_BIO_LENGTH}">${sanitizeHTML(profile.bio || '')}</textarea>
-                            <div style="text-align: right; font-size: 0.8rem; color: var(--gray); margin-top: 5px;">
-                                <span id="bio-char-count">${(profile.bio || '').length}</span>/${CONFIG.MAX_BIO_LENGTH} caracteres
-                            </div>
-                        </div>
-                        <button id="save-profile-btn" class="btn">
-                            <i class="fas fa-save"></i> Salvar Alterações
-                        </button>
-                    </div>
-                `;
-                
-                // Add event listeners
-                document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
-                document.querySelector('.profile-avatar').addEventListener('click', () => {
-                    ui.avatarPreview.style.backgroundImage = profile.avatar ? `url('${profile.avatar}')` : '';
-                    ui.avatarPreview.innerHTML = profile.avatar ? '' : profile.alias.charAt(0).toUpperCase();
-                    ui.avatarModal.classList.add('active');
-                });
-                
-                // Tab switching
-                ui.profileContainer.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        switchProfileTab(e.target.dataset.tab);
-                    });
-                });
-                
-                // Bio character count
-                const bioTextarea = document.getElementById('edit-bio');
-                const charCount = document.getElementById('bio-char-count');
-                
-                bioTextarea.addEventListener('input', () => {
-                    charCount.textContent = bioTextarea.value.length;
-                });
-                
-                loadProfileStats();
-                loadUserPosts();
-            });
-        };
-        
-        const switchProfileTab = (tabId) => {
-            ui.profileContainer.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.tab === tabId);
-            });
-            
-            ui.profileContainer.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.toggle('active', content.id === `${tabId}-tab-content`);
-            });
-            
-            if (tabId === 'posts') loadUserPosts();
-            if (tabId === 'communities') loadUserCommunities();
-            if (tabId === 'connections') loadUserConnections();
-        };
-        
-        const loadProfileStats = () => {
-            let postCount = 0, commCount = 0, connCount = 0;
-            const userRef = state.gun.user();
-            
-            // Count posts
-            userRef.get('posts').map().once(() => {
-                postCount++;
-                document.getElementById('post-count').textContent = postCount;
-            });
-            
-            // Count communities
-            userRef.get('communities').map().once(() => {
-                commCount++;
-                document.getElementById('community-count').textContent = commCount;
-            });
-            
-            // Count connections
-            userRef.get('connections').map().once((val) => {
-                if (val) {
-                    connCount++;
-                    document.getElementById('connection-count').textContent = connCount;
-                }
-            });
-        };
-        
-        const saveProfile = () => {
-            if (!state.user?.is) return;
-            
-            const bio = document.getElementById('edit-bio').value.trim();
-            state.gun.get(`~${state.user.is.pub}`).get('bio').put(bio);
-            
-            showNotification('Biografia atualizada!');
-            document.querySelector('.profile-bio').textContent = bio || 'Sem biografia. Clique em Editar Perfil para adicionar uma.';
-        };
-        
-        const handleAvatarUpload = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Check file size
-            if (file.size > CONFIG.AVATAR_MAX_SIZE) {
-                showNotification('A imagem deve ter menos de 2MB.', 'error');
-                return;
-            }
-            
-            // Check file type
-            if (!file.type.match('image.*')) {
-                showNotification('Selecione uma imagem válida.', 'error');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                ui.avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
-                ui.avatarPreview.innerHTML = '';
-                state.tempAvatarFile = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        };
-        
-        const saveAvatar = () => {
-            if (!state.user?.is || !state.tempAvatarFile) {
-                return showNotification('Selecione uma imagem primeiro.', 'error');
-            }
-            
-            state.gun.get(`~${state.user.is.pub}`).get('avatar').put(state.tempAvatarFile);
-            showNotification('Avatar salvo!');
-            ui.avatarModal.classList.remove('active');
-            state.tempAvatarFile = null;
-            
-            // Update profile view
-            if (state.currentPage === 'profile') {
-                loadProfile();
-            }
-        };
-        
-        const loadUserPosts = () => {
-            const container = document.getElementById('posts-tab-content');
-            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Carregando posts...</div></div>';
-            
-            let hasPosts = false;
-            state.gun.user().get('posts').map().on(postRef => {
-                postRef.once(post => {
-                    if (post?.content) {
-                        if (!hasPosts) {
-                            container.innerHTML = '';
-                            hasPosts = true;
-                        }
-                        
-                        const postEl = document.createElement('div');
-                        postEl.className = 'item-card fade-in';
-                        postEl.innerHTML = `
+                contacts.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(contact => {
+                        const contactElement = document.createElement('div');
+                        contactElement.className = 'contact-item';
+                        contactElement.setAttribute('data-contact-id', contact.id);
+                        contactElement.innerHTML = `
+                            <div class="avatar">${contact.name.charAt(0).toUpperCase()}</div>
                             <div style="flex: 1;">
-                                <div>${sanitizeHTML(post.content)}</div>
-                                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 5px;">
-                                    ${formatTime(post.createdAt)}
-                                </div>
+                                <div style="font-weight: bold;">${contact.name}</div>
                             </div>
+                            <button class="call-contact-btn" title="Chamar" data-contact-id="${contact.id}">
+                                <i class="fas fa-video"></i>
+                            </button>
+                            <button class="delete-contact-btn" title="Excluir contato" data-contact-id="${contact.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         `;
-                        container.prepend(postEl);
+                        elements.displays.contactsList.appendChild(contactElement);
+                    });
+            },
+            
+            removeContact: async (userId) => {
+                if (!state.currentUser || !userId || userId === state.currentUser.id) 
+                    return alert(userId === state.currentUser.id ? 'Você não pode se remover da sua lista de contatos!' : '');
+                
+                const contact = state.contactsCache[userId];
+                if (!contact) return;
+                
+                if (confirm(`Tem certeza que deseja remover ${contact.name} dos seus contatos?\nIsso não afetará as mensagens existentes.`)) {
+                    try {
+                        await db.delete('contacts', userId);
+                        delete state.contactsCache[userId];
+                        gun.get('users').get(state.currentUser.id).get('contacts').get(userId).put(null);
+                        
+                        app.renderContacts(Object.values(state.contactsCache));
+                        
+                        if (state.currentContact?.id === userId) {
+                            state.currentContact = null;
+                            app.showScreen('main');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao remover contato:', error);
+                        alert('Erro ao remover contato. Tente novamente.');
                     }
-                });
-            });
-            
-            // If no posts after 3 seconds, show empty state
-            setTimeout(() => {
-                if (!hasPosts) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 30px; color: var(--gray);">
-                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>Nenhum post ainda</p>
-                        </div>
-                    `;
                 }
-            }, 3000);
-        };
-        
-        const loadUserCommunities = () => {
-            const container = document.getElementById('communities-tab-content');
-            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Carregando comunidades...</div></div>';
+            },
             
-            let hasComms = false;
-            state.gun.user().get('communities').map().on(commRef => {
-                commRef.once(comm => {
-                    if (comm?.name) {
-                        if (!hasComms) {
-                            container.innerHTML = '';
-                            hasComms = true;
+            showChatScreen: () => {
+                if (!state.currentContact) return;
+                elements.displays.chatAvatar.textContent = state.currentContact.name.charAt(0).toUpperCase();
+                elements.displays.chatContactName.textContent = state.currentContact.name;
+                app.showScreen('chat');
+                app.syncMessages();
+            },
+            
+            syncMessages: async () => {
+                if (!state.currentUser || !state.currentContact) return;
+                
+                try {
+                    const now = Date.now();
+                    const contactId = state.currentContact.id;
+                    const conversationKey = utils.getConversationKey(state.currentUser.id, contactId);
+                    
+                    // Carrega mensagens do banco de dados local
+                    const localMessages = await db.getMessages(state.currentUser.id, contactId);
+                    const validMessages = localMessages.filter(msg => msg.expiresAt > now);
+                    
+                    // Inicializa o cache de mensagens para esta conversa se não existir
+                    if (!state.messagesCache[conversationKey]) {
+                        state.messagesCache[conversationKey] = [];
+                    }
+                    
+                    // Atualiza o cache com as mensagens válidas
+                    state.messagesCache[conversationKey] = validMessages;
+                    
+                    // Adiciona IDs ao conjunto de mensagens processadas
+                    validMessages.forEach(msg => state.processedMessageIds.add(msg.id));
+                    
+                    // Renderiza as mensagens
+                    app.renderMessages(validMessages);
+                    
+                    // Remove listeners antigos
+                    state.gunListeners.forEach(listener => listener.off());
+                    state.gunListeners = [];
+                    
+                    // Listener para novas mensagens em tempo real
+                    const listener = gun.get('users').get(state.currentUser.id).get('messages').map().on(async (message, id) => {
+                        if (!message || utils.isDuplicateMessage(id, conversationKey)) return;
+                        
+                        // Marca a mensagem como processada
+                        state.processedMessageIds.add(id);
+                        
+                        // Verifica se a mensagem expirou
+                        if (message.expiresAt && message.expiresAt < now) {
+                            gun.get('users').get(state.currentUser.id).get('messages').get(id).put(null);
+                            return;
                         }
                         
-                        const commEl = document.createElement('div');
-                        commEl.className = 'item-card fade-in';
-                        commEl.innerHTML = `
-                            ${renderAvatar({alias: comm.name}, 'avatar', 'width: 40px; height: 40px;')}
-                            <span class="community-name">${sanitizeHTML(comm.name)}</span>
-                        `;
-                        container.prepend(commEl);
-                    }
-                });
-            });
+                        // Verifica se a mensagem pertence à conversa atual
+                        const isCurrentConversation = 
+                            (message.sender === state.currentUser.id && message.receiver === contactId) ||
+                            (message.sender === contactId && message.receiver === state.currentUser.id);
+                        
+                        if (isCurrentConversation) {
+                            // Verifica se a mensagem já existe no cache
+                            const messageExists = state.messagesCache[conversationKey].some(msg => msg.id === id);
+                            if (!messageExists) {
+                                await db.put('messages', message);
+                                
+                                // Adiciona a mensagem ao cache
+                                state.messagesCache[conversationKey].push(message);
+                                
+                                // Verifica se é uma nova mensagem recebida (não enviada pelo usuário atual)
+                                const isNewMessage = message.sender !== state.currentUser.id;
+                                if (isNewMessage && Notification.permission === "granted") {
+                                    const senderName = state.contactsCache[message.sender]?.name || "Contato";
+                                    new Notification(`Nova mensagem de ${senderName}`, {
+                                        body: message.text || "Você recebeu uma nova mensagem",
+                                        icon: "/icon.png"
+                                    });
+                                }
+                                
+                                // Renderiza a nova mensagem
+                                app.renderMessages([message]);
+                            }
+                        }
+                    });
+                    
+                    state.gunListeners.push(listener);
+                } catch (error) {
+                    console.error('Erro ao sincronizar mensagens:', error);
+                }
+            },
             
-            setTimeout(() => {
-                if (!hasComms) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 30px; color: var(--gray);">
-                            <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>Nenhuma comunidade ainda</p>
+            renderMessages: (messages) => {
+                if (messages.length === 0 && elements.displays.chatMessages.children.length === 0) {
+                    elements.displays.chatMessages.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-comment-dots"></i>
+                            <p>Nenhuma mensagem ainda</p>
+                            <p>Envie uma mensagem para começar a conversa!</p>
                         </div>
                     `;
+                    return;
                 }
-            }, 3000);
-        };
-        
-        const loadUserConnections = () => {
-            const container = document.getElementById('connections-tab-content');
-            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Carregando conexões...</div></div>';
+                
+                if (messages.length > 0 && elements.displays.chatMessages.querySelector('.empty-state')) {
+                    elements.displays.chatMessages.innerHTML = '';
+                }
+                
+                messages.forEach(message => {
+                    if (document.getElementById(`msg-${message.id}`)) return;
+                    
+                    const isSender = message.sender === state.currentUser.id;
+                    const expiryDate = new Date(message.expiresAt);
+                    const expiryTime = expiryDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const expiryDateStr = expiryDate.toLocaleDateString();
+                    
+                    const callButton = message.callId ? `
+                        <div class="call-button-container">
+                            <button class="call-button join-call-btn" data-call-id="${message.callId}">
+                                <i class="fas fa-video"></i> Entrar na Chamada
+                            </button>
+                        </div>
+                    ` : '';
+                    
+                    const messageElement = document.createElement('div');
+                    messageElement.id = `msg-${message.id}`;
+                    messageElement.className = 'message-item';
+                    messageElement.style.alignSelf = isSender ? 'flex-end' : 'flex-start';
+                    messageElement.style.backgroundColor = isSender ? 'var(--secondary)' : 'white';
+                    messageElement.style.marginLeft = isSender ? 'auto' : '0';
+                    messageElement.style.marginRight = isSender ? '0' : 'auto';
+                    messageElement.innerHTML = `
+                        <div class="message-header">
+                            ${!isSender ? `<div class="avatar message-avatar">${state.currentContact.name.charAt(0).toUpperCase()}</div>` : ''}
+                            <div class="message-sender">${isSender ? 'Você' : state.currentContact.name}</div>
+                            <div class="message-time">${utils.formatTime(message.timestamp)}</div>
+                        </div>
+                        ${message.text ? `<div class="message-content">${utils.escapeHtml(message.text)}</div>` : ''}
+                        ${callButton}
+                        ${!isSender ? `<div class="message-expiry">Expira: ${expiryDateStr} às ${expiryTime}</div>` : ''}
+                    `;
+                    
+                    elements.displays.chatMessages.appendChild(messageElement);
+                    elements.displays.chatMessages.scrollTop = elements.displays.chatMessages.scrollHeight;
+                });
+            },
             
-            let hasConns = false;
-            state.gun.user().get('connections').map().on(async (isConnected, pub) => {
-                if (isConnected) {
-                    if (!hasConns) {
-                        container.innerHTML = '';
-                        hasConns = true;
+            sendMessage: async () => {
+                if (!state.currentUser || !state.currentContact) return;
+                
+                const messageText = elements.inputs.message.value.trim();
+                if (!messageText) return;
+                
+                // Verificar se há uma mensagem idêntica muito recente
+                const conversationKey = utils.getConversationKey(state.currentUser.id, state.currentContact.id);
+                const recentMessages = state.messagesCache[conversationKey] || [];
+                const now = Date.now();
+                
+                const duplicate = recentMessages.some(msg => 
+                    msg.text === messageText && 
+                    msg.sender === state.currentUser.id && 
+                    (now - msg.timestamp) < 3000 // 3 segundos
+                );
+                
+                if (duplicate) {
+                    alert('Você já enviou esta mensagem recentemente.');
+                    return;
+                }
+                
+                const messageId = Gun.text.random(16);
+                const expiresAt = now + (24 * 60 * 60 * 1000);
+                
+                const message = {
+                    id: messageId,
+                    sender: state.currentUser.id,
+                    receiver: state.currentContact.id,
+                    text: messageText,
+                    timestamp: now,
+                    expiresAt: expiresAt
+                };
+                
+                try {
+                    // Marcar a mensagem como processada antes de enviar
+                    state.processedMessageIds.add(messageId);
+                    
+                    await db.put('messages', message);
+                    
+                    if (!state.messagesCache[conversationKey]) {
+                        state.messagesCache[conversationKey] = [];
                     }
                     
-                    const profile = await new Promise(resolve => {
-                        state.gun.get(`~${pub}`).once(profile => {
-                            resolve(profile || { alias: 'Usuário' });
+                    state.messagesCache[conversationKey].push(message);
+                    
+                    app.renderMessages([message]);
+                    
+                    gun.get('users').get(state.currentUser.id).get('messages').get(messageId).put(message);
+                    gun.get('users').get(state.currentContact.id).get('messages').get(messageId).put(message);
+                    
+                    elements.inputs.message.value = '';
+                } catch (error) {
+                    console.error('Erro ao enviar mensagem:', error);
+                    alert('Erro ao enviar mensagem. Tente novamente.');
+                    // Remover do conjunto de mensagens processadas em caso de erro
+                    state.processedMessageIds.delete(messageId);
+                }
+            },
+            
+            startMessageCleanupInterval: () => {
+                // Limpar mensagens expiradas
+                setInterval(async () => {
+                    if (!state.currentUser) return;
+                    
+                    const now = Date.now();
+                    
+                    try {
+                        const allMessages = await db.getAll('messages');
+                        const expiredMessages = allMessages.filter(msg => msg.expiresAt < now);
+                        
+                        for (const msg of expiredMessages) await db.delete('messages', msg.id);
+                        
+                        gun.get('users').get(state.currentUser.id).get('messages').map().once(async (message, id) => {
+                            if (message?.expiresAt < now) {
+                                gun.get('users').get(state.currentUser.id).get('messages').get(id).put(null);
+                            }
                         });
-                    });
-                    
-                    const connEl = document.createElement('div');
-                    connEl.className = 'item-card fade-in';
-                    connEl.innerHTML = `
-                        ${renderAvatar(profile, 'avatar', 'width: 40px; height: 40px;')}
-                        <span class="user-card-alias">${sanitizeHTML(profile.alias)}</span>
-                    `;
-                    container.prepend(connEl);
-                }
-            });
-            
-            setTimeout(() => {
-                if (!hasConns) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 30px; color: var(--gray);">
-                            <i class="fas fa-user-friends" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>Nenhuma conexão ainda</p>
-                        </div>
-                    `;
-                }
-            }, 3000);
-        };
-        
-        // Communities functionality
-        const loadCommunities = () => {
-            ui.communitiesContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Carregando comunidades...</div></div>';
-            
-            let hasCommunities = false;
-            const sub = state.gun.get('communities').map().on((community, id) => {
-                if (community?.name) {
-                    if (!hasCommunities) {
-                        ui.communitiesContainer.innerHTML = '';
-                        hasCommunities = true;
-                    }
-                    renderCommunity(community, id);
-                }
-            });
-            
-            state.activeSubscriptions.set('communities-list', sub);
-            
-            setTimeout(() => {
-                if (!hasCommunities) {
-                    ui.communitiesContainer.innerHTML = `
-                        <div class="card">
-                            <div style="text-align: center; padding: 30px; color: var(--gray);">
-                                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                                <h3>Nenhuma comunidade encontrada</h3>
-                                <p>Seja o primeiro a criar uma comunidade!</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, 3000);
-        };
-        
-        const renderCommunity = (community, id) => {
-            let cardEl = document.getElementById(`comm-${id}`);
-            if (cardEl) {
-                cardEl.querySelector('.community-name').textContent = sanitizeHTML(community.name);
-                return;
-            }
-            
-            cardEl = document.createElement('div');
-            cardEl.className = 'community-card fade-in';
-            cardEl.id = `comm-${id}`;
-            
-            cardEl.innerHTML = `
-                ${renderAvatar({alias: community.name})}
-                <div class="community-info">
-                    <div>
-                        <div class="community-name">${sanitizeHTML(community.name)}</div>
-                        <div style="color: var(--gray); font-size: 0.9rem; margin-top: 5px;">
-                            ${community.description || 'Sem descrição'}
-                        </div>
-                    </div>
-                </div>
-                <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
-            `;
-            
-            cardEl.addEventListener('click', () => {
-                state.currentCommunity = { id, name: community.name };
-                navigateTo('feed');
-            });
-            
-            ui.communitiesContainer.prepend(cardEl);
-        };
-        
-        const createCommunity = () => {
-            if (!state.user?.is) {
-                return showNotification('Faça login para criar uma comunidade.', 'error');
-            }
-            
-            const name = document.getElementById('community-name').value.trim();
-            if (!name) {
-                return showNotification('Nome é obrigatório.', 'error');
-            }
-            
-            const desc = document.getElementById('community-desc').value.trim();
-            const communityData = {
-                name,
-                description: desc,
-                creatorPub: state.user.is.pub,
-                createdAt: Date.now()
-            };
-            
-            const commRef = state.gun.get('communities').set(communityData);
-            state.gun.user().get('communities').set(commRef);
-            
-            ui.communityModal.classList.remove('active');
-            showNotification('Comunidade criada!');
-            
-            // Clear form
-            document.getElementById('community-name').value = '';
-            document.getElementById('community-desc').value = '';
-        };
-        
-        // Connections functionality
-        const loadConnectionsPage = () => {
-            if (!state.user?.is) {
-                const msg = `
-                    <div class="card">
-                        <div style="text-align: center; padding: 20px;">
-                            <i class="fas fa-user-lock" style="font-size: 2rem; color: var(--gray); margin-bottom: 10px;"></i>
-                            <p>Faça login para gerenciar conexões</p>
-                            <button class="btn" style="margin-top: 10px;">
-                                <i class="fas fa-sign-in-alt"></i> Fazer Login
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                ui.pendingRequestsContainer.innerHTML = msg;
-                ui.allUsersContainer.innerHTML = msg;
-                
-                document.querySelectorAll('#connections-page .btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        ui.authModal.classList.add('active');
-                    });
-                });
-                
-                return;
-            }
-            
-            loadPendingRequests();
-            loadAllUsers();
-        };
-        
-        const loadPendingRequests = () => {
-            const container = ui.pendingRequestsContainer;
-            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Carregando solicitações...</div></div>';
-            
-            let hasRequests = false;
-            const sub = state.gun.get(`~${state.user.is.pub}`).get('requests').map().on(async (request, senderPub) => {
-                const cardEl = document.getElementById(`req-${senderPub}`);
-                
-                if (request?.status === 'pending') {
-                    if (!hasRequests) {
-                        container.innerHTML = '';
-                        hasRequests = true;
-                    }
-                    
-                    if (cardEl) return;
-                    
-                    const senderProfile = await new Promise(resolve => {
-                        state.gun.get(`~${senderPub}`).once(profile => {
-                            resolve(profile || { alias: 'Usuário' });
+                        
+                        // Limpar mensagens expiradas do cache
+                        Object.keys(state.messagesCache).forEach(conversationKey => {
+                            state.messagesCache[conversationKey] = state.messagesCache[conversationKey].filter(msg => msg.expiresAt > now);
                         });
-                    });
-                    
-                    const newCard = document.createElement('div');
-                    newCard.className = 'user-card fade-in';
-                    newCard.id = `req-${senderPub}`;
-                    
-                    newCard.innerHTML = `
-                        <div class="user-card-info">
-                            ${renderAvatar(senderProfile, 'avatar', 'width: 45px; height: 45px;')}
-                            <span class="user-card-alias">${sanitizeHTML(senderProfile.alias)}</span>
-                        </div>
-                        <div class="user-card-actions">
-                            <button class="btn btn-success btn-sm" data-pub="${senderPub}" data-action="accept">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" data-pub="${senderPub}" data-action="decline">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    `;
-                    
-                    container.prepend(newCard);
-                } else if (cardEl) {
-                    cardEl.remove();
-                }
-            });
-            
-            state.activeSubscriptions.set('pending-requests', sub);
-            
-            setTimeout(() => {
-                if (!hasRequests) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 15px; color: var(--gray);">
-                            <i class="fas fa-inbox" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
-                            <p>Nenhuma solicitação pendente</p>
-                        </div>
-                    `;
-                }
-            }, 3000);
-        };
-        
-        const loadAllUsers = () => {
-            const container = ui.allUsersContainer;
-            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Carregando usuários...</div></div>';
-            
-            const myPub = state.user.is.pub;
-            let hasUsers = false;
-            
-            const sub = state.gun.get('users').map().on(async (user, pub) => {
-                if (!user?.alias || pub === myPub) return;
-                
-                if (!hasUsers) {
-                    container.innerHTML = '';
-                    hasUsers = true;
-                }
-                
-                let cardEl = document.getElementById(`user-${pub}`);
-                if (!cardEl) {
-                    cardEl = document.createElement('div');
-                    cardEl.className = 'user-card fade-in';
-                    cardEl.id = `user-${pub}`;
-                    cardEl.dataset.alias = user.alias.toLowerCase();
-                    container.prepend(cardEl);
-                }
-                
-                // Check connection status
-                const connectionStatus = await new Promise(resolve => {
-                    state.gun.user().get('connections').get(pub).once(val => resolve(!!val));
-                });
-                
-                const sentRequestStatus = await new Promise(resolve => {
-                    state.gun.user().get('sentRequests').get(pub).once(val => resolve(!!val));
-                });
-                
-                let buttonHTML = '';
-                if (connectionStatus) {
-                    buttonHTML = `<button class="btn btn-danger btn-sm" data-pub="${pub}" data-action="remove">
-                        <i class="fas fa-user-times"></i> Remover
-                    </button>`;
-                } else if (sentRequestStatus) {
-                    buttonHTML = `<button class="btn btn-outline btn-sm" disabled>
-                        <i class="fas fa-clock"></i> Solicitado
-                    </button>`;
-                } else {
-                    buttonHTML = `<button class="btn btn-sm" data-pub="${pub}" data-action="request">
-                        <i class="fas fa-user-plus"></i> Conectar
-                    </button>`;
-                }
-                
-                cardEl.innerHTML = `
-                    <div class="user-card-info">
-                        ${renderAvatar(user, 'avatar', 'width: 45px; height: 45px;')}
-                        <span class="user-card-alias">${sanitizeHTML(user.alias)}</span>
-                    </div>
-                    <div class="user-card-actions">
-                        ${buttonHTML}
-                    </div>
-                `;
-            });
-            
-            state.activeSubscriptions.set('all-users', sub);
-            
-            setTimeout(() => {
-                if (!hasUsers) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 15px; color: var(--gray);">
-                            <i class="fas fa-users" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
-                            <p>Nenhum outro usuário encontrado</p>
-                        </div>
-                    `;
-                }
-            }, 3000);
-        };
-        
-        const sendRequest = (targetPub) => {
-            const myPub = state.user.is.pub;
-            
-            state.gun.get(`~${targetPub}`).get('requests').get(myPub).put({ status: 'pending' });
-            state.gun.user().get('sentRequests').get(targetPub).put(true);
-            
-            showNotification('Solicitação enviada!');
-        };
-        
-        const acceptRequest = (senderPub) => {
-            const myPub = state.user.is.pub;
-            
-            state.gun.user().get('connections').get(senderPub).put(true);
-            state.gun.get(`~${senderPub}`).get('connections').get(myPub).put(true);
-            
-            state.gun.user().get('requests').get(senderPub).put(null);
-            state.gun.get(`~${senderPub}`).get('sentRequests').get(myPub).put(null);
-            
-            showNotification('Conexão aceita!');
-        };
-        
-        const declineRequest = (senderPub) => {
-            state.gun.user().get('requests').get(senderPub).put(null);
-            showNotification('Solicitação recusada.');
-        };
-        
-        const removeConnection = (friendPub) => {
-            const myPub = state.user.is.pub;
-            
-            state.gun.user().get('connections').get(friendPub).put(null);
-            state.gun.get(`~${friendPub}`).get('connections').get(myPub).put(null);
-            
-            showNotification('Conexão removida.');
-        };
-        
-        // Event Listeners
-        const setupEventListeners = () => {
-            // Navigation
-            ui.navItems.forEach(item => {
-                item.addEventListener('click', e => {
-                    e.preventDefault();
-                    navigateTo(item.dataset.page);
-                });
-            });
-            
-            // Auth
-            ui.loginBtn.addEventListener('click', () => {
-                ui.authModal.classList.add('active');
-            });
-            
-            ui.logoutBtn.addEventListener('click', logout);
-            
-            ui.authSubmitBtn.addEventListener('click', handleAuth);
-            
-            ui.authPass.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleAuth();
-                }
-            });
-            
-            // Modals
-            ui.closeModalBtns.forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.currentTarget.closest('.modal-overlay').classList.remove('active');
-                });
-            });
-            
-            // Posts
-            ui.createPostBtn.addEventListener('click', createPost);
-            
-            ui.postContent.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                    createPost();
-                }
-            });
-            
-            // Communities
-            ui.showCommunityModalBtn.addEventListener('click', () => {
-                ui.communityModal.classList.add('active');
-            });
-            
-            ui.createCommunitySubmitBtn.addEventListener('click', createCommunity);
-            
-            // Avatar
-            ui.avatarInput.addEventListener('change', handleAvatarUpload);
-            ui.saveAvatarBtn.addEventListener('click', saveAvatar);
-            
-            // Connections
-            document.getElementById('connections-page').addEventListener('click', e => {
-                const action = e.target.closest('[data-action]')?.dataset.action;
-                const pub = e.target.closest('[data-pub]')?.dataset.pub;
-                
-                if (!action || !pub) return;
-                
-                switch(action) {
-                    case 'accept': acceptRequest(pub); break;
-                    case 'decline': declineRequest(pub); break;
-                    case 'remove': removeConnection(pub); break;
-                    case 'request': sendRequest(pub); break;
-                }
-            });
-            
-            // User search
-            ui.userSearchInput.addEventListener('input', debounce(e => {
-                const term = e.target.value.toLowerCase();
-                
-                document.querySelectorAll('#all-users-container .user-card').forEach(card => {
-                    const alias = card.dataset.alias;
-                    card.style.display = alias.includes(term) ? 'flex' : 'none';
-                });
-            }, 300));
-            
-            // Close modals on overlay click
-            document.querySelectorAll('.modal-overlay').forEach(overlay => {
-                overlay.addEventListener('click', e => {
-                    if (e.target === overlay) {
-                        overlay.classList.remove('active');
+                        
+                        // Limpar IDs de mensagens processadas antigas (mais de 1 dia)
+                        if (state.processedMessageIds) {
+                            const oneDayAgo = now - (24 * 60 * 60 * 1000);
+                            const messagesToKeep = new Set();
+                            
+                            // Manter apenas IDs de mensagens que ainda estão no cache
+                            Object.values(state.messagesCache).forEach(messages => {
+                                messages.forEach(msg => {
+                                    if (msg.timestamp > oneDayAgo) {
+                                        messagesToKeep.add(msg.id);
+                                    }
+                                });
+                            });
+                            
+                            state.processedMessageIds = messagesToKeep;
+                        }
+                    } catch (error) {
+                        console.error('Erro ao limpar mensagens expiradas:', error);
                     }
-                });
-            });
-        };
-        
-        // Initialize the application
-        const init = () => {
-            setupEventListeners();
-            checkUserSession();
-            navigateTo('feed');
+                }, 60 * 60 * 1000); // A cada hora
+            },
             
-            // Add service worker for PWA capabilities in production
-            if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
-                navigator.serviceWorker.register('/sw.js').catch(err => {
-                    console.log('ServiceWorker registration failed: ', err);
+            startQrScanner: () => {
+                if (state.qrScannerActive) return;
+                state.qrScannerActive = true;
+                
+                if (elements.displays.qrVideo.srcObject) {
+                    elements.displays.qrVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+
+                if (elements.displays.scanOverlay) {
+                    elements.displays.scanOverlay.style.display = 'none';
+                }
+
+                navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                }).then(stream => {
+                    elements.displays.qrVideo.srcObject = stream;
+                    elements.displays.qrVideo.setAttribute('playsinline', true);
+                    
+                    elements.displays.qrVideo.play()
+                        .then(() => {
+                            if (elements.displays.scanOverlay) {
+                                elements.displays.scanOverlay.style.display = 'flex';
+                            }
+
+                            const canvasElement = document.createElement('canvas');
+                            const canvas = canvasElement.getContext('2d', { willReadFrequently: true });
+                            canvasElement.width = elements.displays.qrVideo.videoWidth;
+                            canvasElement.height = elements.displays.qrVideo.videoHeight;
+
+                            function scanFrame() {
+                                if (!state.qrScannerActive || !elements.displays.qrVideo.srcObject) return;
+
+                                try {
+                                    if (elements.displays.qrVideo.readyState === elements.displays.qrVideo.HAVE_ENOUGH_DATA) {
+                                        canvasElement.width = elements.displays.qrVideo.videoWidth;
+                                        canvasElement.height = elements.displays.qrVideo.videoHeight;
+                                        canvas.drawImage(elements.displays.qrVideo, 0, 0, canvasElement.width, canvasElement.height);
+                                        
+                                        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                                        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                                            inversionAttempts: "dontInvert",
+                                        });
+
+                                        if (code) {
+                                            try {
+                                                const qrData = JSON.parse(code.data);
+                                                if (qrData.app === "BunnyChat" && qrData.userId) {
+                                                    if (qrData.userId === state.currentUser.id) {
+                                                        alert('Você não pode adicionar a si mesmo!');
+                                                        return;
+                                                    }
+                                                    app.stopQrScanner();
+                                                    app.addContact(qrData.userId, qrData.userName || 'Novo Contato');
+                                                    return;
+                                                }
+                                            } catch (e) {
+                                                console.log('QR Code inválido:', e);
+                                            }
+                                        }
+                                    }
+                                    requestAnimationFrame(scanFrame);
+                                } catch (e) {
+                                    console.error('Erro no scanner:', e);
+                                }
+                            }
+
+                            scanFrame();
+                        })
+                        .catch(err => {
+                            console.error('Erro ao reproduzir vídeo:', err);
+                            alert('Erro ao iniciar a câmera. Por favor, recarregue a página e tente novamente.');
+                            app.stopQrScanner();
+                        });
+                }).catch(err => {
+                    console.error('Erro ao acessar a câmera:', err);
+                    alert('Não foi possível acessar a câmera. Verifique as permissões.');
+                    app.stopQrScanner();
                 });
+            },
+            
+            stopQrScanner: () => {
+                if (!state.qrScannerActive) return;
+                state.qrScannerActive = false;
+                
+                if (elements.displays.scanOverlay) {
+                    elements.displays.scanOverlay.style.display = 'flex';
+                }
+
+                if (elements.displays.qrVideo.srcObject) {
+                    elements.displays.qrVideo.srcObject.getTracks().forEach(track => track.stop());
+                    elements.displays.qrVideo.srcObject = null;
+                }
+            },
+            
+            addContact: async (userId, userName) => {
+                if (!state.currentUser || !userId || state.contactsCache[userId]) 
+                    return alert(state.contactsCache[userId] ? 'Este contato já está na sua lista!' : '');
+
+                const contact = { id: userId, name: userName, timestamp: Date.now() };
+                const myContact = { 
+                    id: state.currentUser.id, 
+                    name: state.currentUser.name, 
+                    timestamp: Date.now() 
+                };
+                
+                try {
+                    await db.put('contacts', contact);
+                    state.contactsCache[userId] = contact;
+                    app.renderContacts(Object.values(state.contactsCache));
+                    gun.get('users').get(state.currentUser.id).get('contacts').get(userId).put(contact);
+                    
+                    const otherUserExists = await new Promise(resolve => {
+                        gun.get('users').get(userId).once(user => resolve(!!user), { wait: 2000 });
+                    });
+
+                    if (otherUserExists) {
+                        gun.get('users').get(userId).get('contacts').get(state.currentUser.id).put(myContact);
+                        gun.get('users').get(userId).get('contacts').get(state.currentUser.id).once(updated => {
+                            if (updated) {
+                                console.log('Contato adicionado mutuamente com sucesso');
+                                alert(`Contato ${userName} adicionado com sucesso! Agora vocês podem conversar.`);
+                            }
+                        });
+                    } else {
+                        console.log('O outro usuário não foi encontrado no banco de dados');
+                        alert(`Contato ${userName} adicionado localmente. Quando o outro usuário entrar no app, ele será notificado.`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao adicionar contato:', error);
+                    alert('Erro ao adicionar contato. Tente novamente.');
+                }
             }
         };
-        
-        // Start the app
-        init();
-    })();
+
+        if (!("Notification" in window)) console.warn("Este navegador não suporta notificações!");
+
+        window.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
 </html>
