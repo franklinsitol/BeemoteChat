@@ -143,6 +143,14 @@
             font-size: 0.8rem;
         }
 
+        /* NOVO: Botão desabilitado */
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .input-group {
             margin-bottom: 20px;
         }
@@ -203,6 +211,7 @@
             flex-direction: column;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             max-width: 250px;
+            position: relative;
         }
 
         #qrCodeCanvas {
@@ -600,28 +609,38 @@
             display: none;
         }
 
-        /* Estado de loading */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+        /* NOVO: Estado de carregamento */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--secondary);
+            border-top: 5px solid var(--accent);
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: var(--accent);
+            font-size: 1rem;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--accent);
-            text-align: center;
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 480px) {
@@ -674,10 +693,15 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- DEBUG CONSOLE (remova em produção) -->
-        <div id="debugConsole" style="display:none; position:fixed; top:0; left:0; right:0; background:#000; color:#0f0; padding:10px; font-size:10px; z-index:9999; max-height:100px; overflow-y:auto;"></div>
+    <!-- OVERLAY DE LOADING -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Processando...</div>
+        </div>
+    </div>
 
+    <div class="container">
         <!-- Tela de Seleção de Usuário -->
         <div id="userSelectScreen" class="screen active">
             <div class="logo">
@@ -883,18 +907,31 @@
     </button>
 
     <script>
-        // SISTEMA DE DEBUG - Use debugLog('msg') para ver logs no console ou overlay
-        const DEBUG_MODE = true; // Mude para false em produção
-        function debugLog(message) {
+        // SISTEMA DE DEBUG - Use console.log normal, ele será capturado
+        const DEBUG_MODE = true;
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (DEBUG_MODE) {
+                const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+                logDebug(`[LOG] ${msg}`);
+            }
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            if (DEBUG_MODE) {
+                const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+                logDebug(`[ERROR] ${msg}`);
+            }
+        };
+
+        function logDebug(message) {
             const timestamp = new Date().toLocaleTimeString();
             const log = `[${timestamp}] ${message}`;
-            console.log(log);
-            
-            if (DEBUG_MODE && document.getElementById('debugConsole').style.display === 'block') {
-                const console = document.getElementById('debugConsole');
-                console.innerHTML += log + '\n';
-                console.scrollTop = console.scrollHeight;
-            }
+            console.log(log); // Usando o original agora
         }
 
         // Configuração do Gun.js
@@ -997,7 +1034,8 @@
                 messages: document.getElementById('messagesContent')
             },
             video: document.getElementById('qrVideo'),
-            scanOverlay: document.getElementById('scanOverlay')
+            scanOverlay: document.getElementById('scanOverlay'),
+            loadingOverlay: document.getElementById('loadingOverlay')
         };
 
         // Funções auxiliares
@@ -1078,14 +1116,12 @@
             return (now - messageTime) > 24 * 60 * 60 * 1000; // 24 horas
         }
 
-        // DEBUG: Mostra console de debug ao pressionar Ctrl+D
-        if (DEBUG_MODE) {
-            window.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.key === 'd') {
-                    const console = document.getElementById('debugConsole');
-                    console.style.display = console.style.display === 'block' ? 'none' : 'block';
-                }
-            });
+        // Função para mostrar/ocultar loading
+        function showLoading(show = true, text = 'Processando...') {
+            const overlay = elements.loadingOverlay;
+            const textEl = overlay.querySelector('.loading-text');
+            textEl.textContent = text;
+            overlay.style.display = show ? 'flex' : 'none';
         }
 
         // Gerenciamento de múltiplos usuários
@@ -1199,7 +1235,7 @@
                     generateQrCode();
                     break;
                 case 'scan':
-                    setTimeout(() => startQrScanner(), 300); // Pequeno delay para garantir que a tela está renderizada
+                    setTimeout(() => startQrScanner(), 300); // Pequeno delay
                     break;
                 case 'chat':
                     if (state.currentContact) {
@@ -1221,15 +1257,15 @@
                 createdAt: Date.now()
             };
             
-            debugLog(`Registrando usuário: ${userId}`);
+            logDebug(`Registrando usuário: ${userId}`);
             
             // Salva o usuário no GunDB
             gun.get('users').get(userId).put(user, (ack) => {
                 if (ack.err) {
-                    debugLog(`Erro ao registrar usuário: ${ack.err}`);
+                    logDebug(`Erro ao registrar usuário: ${ack.err}`);
                     showNotification('Erro ao criar conta');
                 } else {
-                    debugLog('Usuário registrado com sucesso');
+                    logDebug('Usuário registrado com sucesso');
                 }
             });
             
@@ -1242,11 +1278,11 @@
         }
 
         function loginUser(userId, pin, callback) {
-            debugLog(`Tentando login para usuário: ${userId}`);
+            logDebug(`Tentando login para usuário: ${userId}`);
             
             gun.get('users').get(userId).once((user) => {
                 if (user && user.pin === pin) {
-                    debugLog('Login bem-sucedido');
+                    logDebug('Login bem-sucedido');
                     state.currentUser = user;
                     
                     // Atualiza a exibição do perfil
@@ -1260,14 +1296,14 @@
                     
                     callback(true);
                 } else {
-                    debugLog('Login falhou - PIN incorreto ou usuário não encontrado');
+                    logDebug('Login falhou - PIN incorreto ou usuário não encontrado');
                     callback(false);
                 }
             });
         }
 
         function logout() {
-            debugLog('Fazendo logout');
+            logDebug('Fazendo logout');
             
             // Remove listeners de mensagens
             if (state.messageListeners[state.currentUser.id]) {
@@ -1303,7 +1339,7 @@
         function setupMessageListeners() {
             if (!state.currentUser) return;
             
-            debugLog('Configurando listeners de mensagem para: ' + state.currentUser.id);
+            logDebug('Configurando listeners de mensagem para: ' + state.currentUser.id);
             
             // Remove listener antigo se existir
             if (state.messageListeners[state.currentUser.id]) {
@@ -1320,7 +1356,7 @@
                     if (!message || isMessageExpired(message.timestamp) || state.processedMessages.has(id)) return;
                     
                     state.processedMessages.add(id);
-                    debugLog(`Nova mensagem recebida: ${id}`);
+                    logDebug(`Nova mensagem recebida: ${id}`);
                     
                     // Verifica se é uma mensagem nova e não lida
                     if (message.receiver === state.currentUser.id && !message.read) {
@@ -1360,7 +1396,7 @@
         // Funções de contatos
         function addContact(contactId) {
             if (!state.currentUser) {
-                debugLog('Erro: Sem usuário logado');
+                logDebug('Erro: Sem usuário logado');
                 return;
             }
             
@@ -1370,53 +1406,78 @@
                 return;
             }
             
+            // Garante que o objeto contacts existe
+            if (!state.currentUser.contacts) {
+                state.currentUser.contacts = {};
+            }
+            
             // Verifica se já é contato
-            if (state.currentUser.contacts && state.currentUser.contacts[contactId]) {
+            if (state.currentUser.contacts[contactId]) {
                 showNotification('Contato já adicionado!');
                 return;
             }
             
-            debugLog(`Adicionando contato: ${contactId}`);
+            logDebug(`Adicionando contato: ${contactId}`);
+            showLoading(true, 'Buscando usuário...');
             
             // Primeiro obtemos os dados do contato
             gun.get('users').get(contactId).once((contact) => {
-                if (!contact) {
-                    debugLog('Contato não encontrado no GunDB');
-                    showNotification('Contato não encontrado');
+                if (!contact || !contact.id) {
+                    logDebug('Contato não encontrado no GunDB');
+                    showLoading(false);
+                    showNotification('Usuário não encontrado');
                     return;
                 }
                 
-                debugLog(`Contato encontrado: ${contact.name}`);
+                logDebug(`Contato encontrado: ${contact.name}`);
+                showLoading(true, 'Salvando contato...');
                 
                 // Adiciona o contato ao usuário atual
                 const contactData = {
                     id: contactId,
                     name: contact.name,
                     nickname: contact.nickname,
-                    addedAt: Date.now()
+                    addedAt: Date.now(),
+                    isContact: true // Flag para identificar como contato
                 };
                 
+                // Salva contato para o usuário atual
                 gun.get('users').get(state.currentUser.id).get('contacts').get(contactId).put(contactData, (ack) => {
                     if (ack.err) {
-                        debugLog(`Erro ao adicionar contato: ${ack.err}`);
+                        logDebug(`Erro ao adicionar contato: ${ack.err}`);
+                        showLoading(false);
                         showNotification('Erro ao adicionar contato');
-                    } else {
-                        debugLog('Contato adicionado com sucesso');
-                        showNotification(`Contato ${contact.name} adicionado!`);
-                        
-                        // Adiciona o usuário atual como contato do outro usuário
-                        const reverseContactData = {
-                            id: state.currentUser.id,
-                            name: state.currentUser.name,
-                            nickname: state.currentUser.nickname,
-                            addedAt: Date.now()
-                        };
-                        
-                        gun.get('users').get(contactId).get('contacts').get(state.currentUser.id).put(reverseContactData);
-                        
-                        // Volta para tela principal após pequeno delay
-                        setTimeout(() => showScreen('main'), 1000);
+                        return;
                     }
+                    
+                    logDebug('Contato adicionado ao usuário atual');
+                    
+                    // Adiciona o usuário atual como contato do outro usuário (bidirecional)
+                    const reverseContactData = {
+                        id: state.currentUser.id,
+                        name: state.currentUser.name,
+                        nickname: state.currentUser.nickname,
+                        addedAt: Date.now(),
+                        isContact: true
+                    };
+                    
+                    gun.get('users').get(contactId).get('contacts').get(state.currentUser.id).put(reverseContactData, (ack2) => {
+                        showLoading(false);
+                        
+                        if (ack2.err) {
+                            logDebug(`Erro ao adicionar contato reverso: ${ack2.err}`);
+                            showNotification('Erro ao completar adição bidirecional');
+                        } else {
+                            logDebug('Contato bidirecional adicionado com sucesso');
+                            showNotification(`Contato ${contact.name} adicionado!`);
+                            
+                            // Força recarregamento da lista de contatos
+                            setTimeout(() => {
+                                loadContacts();
+                                showScreen('main');
+                            }, 500);
+                        }
+                    });
                 });
             });
         }
@@ -1424,13 +1485,13 @@
         function loadContacts() {
             if (!state.currentUser) return;
             
-            debugLog('Carregando contatos...');
+            logDebug('Carregando contatos...');
             elements.displays.contactsList.innerHTML = '';
             
             gun.get('users').get(state.currentUser.id).get('contacts').map().once((contact, contactId) => {
-                if (!contact) return;
+                if (!contact || !contact.isContact) return; // Só mostra contatos válidos
                 
-                debugLog(`Contato encontrado: ${contact.name} (${contactId})`);
+                logDebug(`Contato encontrado: ${contact.name} (${contactId})`);
                 state.contacts[contactId] = contact;
                 
                 const contactElement = document.createElement('div');
@@ -1502,7 +1563,8 @@
                 name: newName,
                 nickname: newNickname || newName,
                 id: contactId,
-                addedAt: state.currentContact.addedAt || Date.now()
+                addedAt: state.currentContact.addedAt || Date.now(),
+                isContact: true
             }, (ack) => {
                 if (ack.err) {
                     showNotification('Erro ao salvar alterações');
@@ -1519,7 +1581,7 @@
             if (confirm(`Tem certeza que deseja excluir ${state.currentContact.name} dos seus contatos?`)) {
                 const contactId = state.currentContact.id;
                 
-                // Remove o contato do GunDB
+                // Remove o contato do GunDB (seta como null)
                 gun.get('users').get(state.currentUser.id).get('contacts').get(contactId).put(null);
                 
                 // Remove o usuário atual dos contatos do outro usuário
@@ -1542,7 +1604,7 @@
                 read: false
             };
             
-            debugLog(`Enviando mensagem para ${contactId}: ${messageText}`);
+            logDebug(`Enviando mensagem para ${contactId}: ${messageText.substr(0, 30)}...`);
             
             // Salva a mensagem para o remetente
             gun.get('users').get(state.currentUser.id).get('messages').get(contactId).set(message);
@@ -1560,7 +1622,7 @@
         function loadRecentMessages() {
             if (!state.currentUser) return;
             
-            debugLog('Carregando mensagens recentes...');
+            logDebug('Carregando mensagens recentes...');
             elements.displays.messagesList.innerHTML = '';
             
             // Agrupa mensagens por contato
@@ -1579,7 +1641,7 @@
                     
                     // Obtém os dados do contato
                     gun.get('users').get(otherUserId).once((contact) => {
-                        if (contact) {
+                        if (contact && contact.isContact) { // Só mostra mensagens de contatos
                             messagesByContact[otherUserId].contact = {
                                 id: otherUserId,
                                 name: contact.name,
@@ -1638,7 +1700,7 @@
         function openChat(contactId) {
             if (!state.currentUser) return;
             
-            debugLog(`Abrindo chat com: ${contactId}`);
+            logDebug(`Abrindo chat com: ${contactId}`);
             
             // Define o chat ativo
             state.activeChat = contactId;
@@ -1671,7 +1733,7 @@
         function loadChatMessages(contactId) {
             if (!state.currentUser) return;
             
-            debugLog(`Carregando mensagens do chat: ${contactId}`);
+            logDebug(`Carregando mensagens do chat: ${contactId}`);
             elements.displays.chatMessages.innerHTML = '';
             
             gun.get('users').get(state.currentUser.id).get('messages').get(contactId).map().once((message, id) => {
@@ -1726,16 +1788,14 @@
         function generateQrCode() {
             if (!state.currentUser) return;
             
-            debugLog('Gerando QR Code...');
+            logDebug('Gerando QR Code...');
             
             const qrData = JSON.stringify({
                 userId: state.currentUser.id,
-                app: 'BunnyChat',
-                // Removemos o token para simplificar - o ID do usuário já é único
-                timestamp: Date.now() // Apenas para garantir unicidade do QR gerado
+                app: 'BunnyChat'
             });
             
-            debugLog(`QR Data: ${qrData}`);
+            logDebug(`QR Data: ${qrData}`);
             
             // Gera o QR Code
             QRCode.toCanvas(elements.displays.qrCode, qrData, {
@@ -1745,13 +1805,13 @@
                     dark: '#5A2A3E',
                     light: '#FFF2F5'
                 },
-                errorCorrectionLevel: 'H' // Alta correção de erros
+                errorCorrectionLevel: 'H'
             }, (error) => {
                 if (error) {
-                    debugLog(`Erro ao gerar QR: ${error}`);
+                    logDebug(`Erro ao gerar QR: ${error}`);
                     console.error(error);
                 } else {
-                    debugLog('QR Code gerado com sucesso');
+                    logDebug('QR Code gerado com sucesso');
                 }
             });
             
@@ -1761,7 +1821,7 @@
         function startQrScanner() {
             if (state.isScanning) return; // Evita iniciar múltiplas vezes
             
-            debugLog('Iniciando scanner QR...');
+            logDebug('Iniciando scanner QR...');
             state.isScanning = true;
             state.lastScannedQR = null;
             
@@ -1776,14 +1836,14 @@
                 } 
             })
             .then(function(stream) {
-                debugLog('Câmera acessada com sucesso');
+                logDebug('Câmera acessada com sucesso');
                 elements.video.srcObject = stream;
                 elements.video.setAttribute('playsinline', true);
                 elements.video.play().then(() => {
-                    debugLog('Vídeo iniciado');
+                    logDebug('Vídeo iniciado');
                     elements.scanOverlay.style.display = 'none';
                 }).catch(err => {
-                    debugLog(`Erro ao iniciar vídeo: ${err.message}`);
+                    logDebug(`Erro ao iniciar vídeo: ${err.message}`);
                 });
                 
                 let scanCount = 0;
@@ -1805,7 +1865,7 @@
                             });
                             
                             if (code) {
-                                debugLog(`QR Code detectado: ${code.data}`);
+                                logDebug(`QR Code detectado: ${code.data}`);
                                 
                                 try {
                                     const qrData = JSON.parse(code.data);
@@ -1821,37 +1881,24 @@
                                         if (state.lastScannedQR === qrData.userId) return;
                                         state.lastScannedQR = qrData.userId;
                                         
-                                        // Verifica se o usuário existe com timeout
-                                        let timeoutHandler = setTimeout(() => {
-                                            showNotification('Tempo esgotado ao verificar usuário');
-                                            stopQrScanner();
-                                        }, 5000);
+                                        // Para o scanner imediatamente
+                                        stopQrScanner();
                                         
-                                        gun.get('users').get(qrData.userId).once((user) => {
-                                            clearTimeout(timeoutHandler);
-                                            
-                                            if (user && user.id) {
-                                                debugLog(`Usuário encontrado: ${user.name}`);
-                                                stopQrScanner();
-                                                // Pequeno delay para garantir que a câmera foi liberada
-                                                setTimeout(() => addContact(qrData.userId), 300);
-                                            } else {
-                                                debugLog('Usuário não encontrado no GunDB');
-                                                showNotification('Usuário não encontrado');
-                                                stopQrScanner();
-                                            }
-                                        });
+                                        // Adiciona contato com pequeno delay para garantir limpeza
+                                        setTimeout(() => {
+                                            addContact(qrData.userId);
+                                        }, 300);
                                     } else {
-                                        debugLog('QR Code inválido: estrutura incorreta');
+                                        logDebug('QR Code inválido: estrutura incorreta');
                                     }
                                 } catch (e) {
-                                    debugLog(`Erro ao parsear QR: ${e.message}`);
+                                    logDebug(`Erro ao parsear QR: ${e.message}`);
                                     console.error('Erro ao ler QR Code:', e);
                                 }
                             }
                         }
                     } catch (error) {
-                        debugLog(`Erro no tick do scanner: ${error.message}`);
+                        logDebug(`Erro no tick do scanner: ${error.message}`);
                     }
                     
                     if (state.isScanning) {
@@ -1862,7 +1909,7 @@
                 requestAnimationFrame(tick);
             })
             .catch(function(err) {
-                debugLog(`Erro ao acessar câmera: ${err.message}`);
+                logDebug(`Erro ao acessar câmera: ${err.message}`);
                 console.error('Erro ao acessar a câmera:', err);
                 elements.scanOverlay.innerHTML = `
                     <div>
@@ -1877,7 +1924,7 @@
         }
 
         function stopQrScanner() {
-            debugLog('Parando scanner QR');
+            logDebug('Parando scanner QR');
             state.isScanning = false;
             
             if (elements.video.srcObject) {
@@ -1895,9 +1942,9 @@
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('sw.js').then(registration => {
-                        debugLog('ServiceWorker registrado com sucesso');
+                        logDebug('ServiceWorker registrado com sucesso');
                     }).catch(err => {
-                        debugLog(`Erro ao registrar ServiceWorker: ${err}`);
+                        logDebug(`Erro ao registrar ServiceWorker: ${err}`);
                     });
                 });
             }
@@ -1915,9 +1962,9 @@
                     state.deferredPrompt.prompt();
                     state.deferredPrompt.userChoice.then((choiceResult) => {
                         if (choiceResult.outcome === 'accepted') {
-                            debugLog('Usuário aceitou instalar PWA');
+                            logDebug('Usuário aceitou instalar PWA');
                         } else {
-                            debugLog('Usuário rejeitou instalar PWA');
+                            logDebug('Usuário rejeitou instalar PWA');
                         }
                         state.deferredPrompt = null;
                     });
@@ -1925,7 +1972,7 @@
             });
             
             window.addEventListener('appinstalled', () => {
-                debugLog('PWA instalado');
+                logDebug('PWA instalado');
                 elements.buttons.install.style.display = 'none';
                 state.deferredPrompt = null;
             });
@@ -1933,7 +1980,7 @@
 
         // Event Listeners
         function setupEventListeners() {
-            debugLog('Configurando event listeners...');
+            logDebug('Configurando event listeners...');
             
             // Navegação
             elements.buttons.newUser.addEventListener('click', () => {
@@ -2141,7 +2188,7 @@
             
             // Verifica se há um usuário logado no carregamento
             window.addEventListener('DOMContentLoaded', () => {
-                debugLog('Aplicação carregada');
+                logDebug('Aplicação carregada');
                 loadLocalUsers();
                 
                 const lastUserId = localStorage.getItem('bunnyChatLastUserId');
@@ -2167,7 +2214,7 @@
             
             // Limpa listeners ao sair da página
             window.addEventListener('beforeunload', () => {
-                debugLog('Limpando listeners...');
+                logDebug('Limpando listeners...');
                 if (state.messageListeners[state.currentUser.id]) {
                     state.messageListeners[state.currentUser.id].off();
                 }
